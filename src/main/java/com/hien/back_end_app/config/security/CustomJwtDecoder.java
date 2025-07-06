@@ -30,7 +30,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
         if (nimbusJwtDecoder == null) {
             SecretKey key = new SecretKeySpec(accessKey.getBytes(), JWSAlgorithm.HS256.toString());
-            NimbusJwtDecoder nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(key)
+            nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(key)
                     .macAlgorithm(MacAlgorithm.HS256)
                     .build();
         }

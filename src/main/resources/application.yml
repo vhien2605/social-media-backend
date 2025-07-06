@@ -34,13 +34,13 @@ spring:
 security:
   jwt:
     access:
-      timeout: 3 #minute
+      timeout: 15 #minute
       secretKey: ${jwt.access.key}
     refresh:
       timeout: 1 #month
       secretKey: ${jwt.refresh.key}
     reset:
-      timeout: 5 #minute
+      timeout: 15 #minute
       secretKey: ${jwt.reset.key}
 
 

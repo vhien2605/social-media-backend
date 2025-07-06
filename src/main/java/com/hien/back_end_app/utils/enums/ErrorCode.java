@@ -19,7 +19,8 @@ public enum ErrorCode {
     USER_NOT_EXISTED(400, "can't find any user with given email", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(401, "user unathorized", HttpStatus.UNAUTHORIZED),
     ACCESS_DENIED(403, "you dont have permission to do this", HttpStatus.FORBIDDEN),
-    AUTHORITY_TYPE_INVALID(400, "authority type is invalid, try again", HttpStatus.BAD_REQUEST);
+    AUTHORITY_TYPE_INVALID(400, "authority type is invalid, try again", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_EXIST(400, "role is not exist", HttpStatus.BAD_REQUEST);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;
