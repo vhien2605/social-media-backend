@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: back_end_app
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: ${oauth2.client.google.client-id}
+            clientSecret: ${oauth2.client.google.client-secret}
+            redirectUri: "{baseUrl}/oauth2/callback/google"
+            scope:
+              - email
+              - profile
+          facebook:
+            clientId: ${oauth2.client.facebook.client-id}
+            clientSecret: ${oauth2.client.facebook.client-secret}
+            redirectUri: "{baseUrl}/oauth2/callback/facebook"
+            scope:
+              - email
+              - public_profile
+  datasource:
+    url: ${databaseUrl}
+    username: ${databaseUsername}
+    password: ${databasePassword}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  sql:
+    init-mode: always
+
+security:
+  jwt:
+    access:
+      timeout: 3 #minute
+      secretKey: ${jwt.access.key}
+    refresh:
+      timeout: 1 #month
+      secretKey: ${jwt.refresh.key}
+    reset:
+      timeout: 5 #minute
+      secretKey: ${jwt.reset.key}
+
+
