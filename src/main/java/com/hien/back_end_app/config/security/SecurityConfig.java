@@ -28,7 +28,7 @@ public class SecurityConfig {
     private final CustomJwtDecoder customJwtDecoder;
 
     private final String[] WHITE_LIST_URL = {
-            "/v1/auth/**"
+            "/v1/auth/**", "/ws/**"
     };
 
     private final String[] OAUTH2_LIST_URL = {
@@ -43,7 +43,7 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .securityMatcher("/v1/**")
+                .securityMatcher("/v1/**", "/ws/**")
                 .authorizeHttpRequests(
                         requests -> requests
                                 .requestMatchers(WHITE_LIST_URL).permitAll()
@@ -96,7 +96,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(List.of("http://127.0.0.1:5500"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

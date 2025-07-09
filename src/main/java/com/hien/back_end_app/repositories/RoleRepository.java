@@ -1,7 +1,6 @@
 package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.Role;
-import com.hien.back_end_app.entities.User;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

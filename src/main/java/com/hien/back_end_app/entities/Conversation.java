@@ -1,6 +1,5 @@
 package com.hien.back_end_app.entities;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,13 +8,14 @@ import lombok.Setter;
 
 import java.util.Set;
 
+
 @Entity
-@Table(name = "role")
+@Table(name = "conversation")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role extends AbstractEntity {
+public class Conversation extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -24,11 +24,16 @@ public class Role extends AbstractEntity {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "is_group")
+    private boolean isGroup;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User user;
 
 
     @ManyToMany
-    @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
-    private Set<Permission> permissions;
+    @JoinTable(name = "participant_conversation", joinColumns = @JoinColumn(name = "conversation_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> participants;
 }

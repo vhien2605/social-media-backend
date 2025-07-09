@@ -20,7 +20,12 @@ public enum ErrorCode {
     UNAUTHORIZED(401, "user unathorized", HttpStatus.UNAUTHORIZED),
     ACCESS_DENIED(403, "you dont have permission to do this", HttpStatus.FORBIDDEN),
     AUTHORITY_TYPE_INVALID(400, "authority type is invalid, try again", HttpStatus.BAD_REQUEST),
-    ROLE_NOT_EXIST(400, "role is not exist", HttpStatus.BAD_REQUEST);
+    ROLE_NOT_EXIST(400, "role is not exist", HttpStatus.BAD_REQUEST),
+    REGEX_INVALID(400, "regex is invalid", HttpStatus.BAD_REQUEST),
+    USER_NOT_SUBSCRIBE(400, "user dont subrice this port", HttpStatus.BAD_REQUEST),
+    USER_NOT_HAVE_CONVERSATION(400, "user not have conversation", HttpStatus.BAD_REQUEST),
+    CONVERSATION_NOT_EXIST(400, "conversation is not exist", HttpStatus.BAD_REQUEST),
+    UPLOAD_FILE_FAILED(503, "service unavailable", HttpStatus.SERVICE_UNAVAILABLE);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

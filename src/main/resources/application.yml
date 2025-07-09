@@ -34,13 +34,22 @@ spring:
 security:
   jwt:
     access:
-      timeout: 15 #minute
+      timeout: 155 #minute
       secretKey: ${jwt.access.key}
     refresh:
       timeout: 1 #month
       secretKey: ${jwt.refresh.key}
     reset:
-      timeout: 15 #minute
+      timeout: 155 #minute
       secretKey: ${jwt.reset.key}
 
+logging:
+  level:
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
+
+cloudinary:
+  name: ${cloudinary.name}
+  apiKey: ${cloudinary.api_key}
+  secretKey: ${cloudinary.api_secret}
 
