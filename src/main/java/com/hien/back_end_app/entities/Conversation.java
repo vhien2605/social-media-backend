@@ -26,12 +26,10 @@ public class Conversation extends AbstractEntity {
 
     @Column(name = "is_group")
     private boolean isGroup;
-
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User user;
-
 
     @ManyToMany
     @JoinTable(name = "participant_conversation", joinColumns = @JoinColumn(name = "conversation_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))

@@ -32,7 +32,6 @@ public class User extends AbstractEntity {
     @NotBlank(message = "password must not be blank")
     private String password;
 
-
     @Column(name = "auth_provider")
     @Enumerated(EnumType.STRING)
     @EnumPattern(name = "auth_provider", regexp = "GOOGLE|FACEBOOK|STANDARD")
@@ -68,4 +67,14 @@ public class User extends AbstractEntity {
     @ManyToMany
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
+
+    @OneToMany(mappedBy = "createdBy")
+    private Set<Post> posts;
+
+
+    @OneToMany(mappedBy = "targetUser")
+    private Set<Follow> follows;
+    
+    @OneToMany(mappedBy = "user")
+    private Set<Album> albums;
 }
