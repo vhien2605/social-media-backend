@@ -4,16 +4,14 @@ package com.hien.back_end_app.services;
 import com.hien.back_end_app.dto.request.SocketMessageDTO;
 import com.hien.back_end_app.dto.response.socket.MediaResponseDTO;
 import com.hien.back_end_app.dto.response.socket.MessageResponseDTO;
-import com.hien.back_end_app.entities.Conversation;
-import com.hien.back_end_app.entities.Message;
-import com.hien.back_end_app.entities.MessageMedia;
-import com.hien.back_end_app.entities.User;
+import com.hien.back_end_app.dto.response.socket.NotificationResponseDTO;
+import com.hien.back_end_app.entities.*;
 import com.hien.back_end_app.exceptions.AppException;
-import com.hien.back_end_app.repositories.ConversationRepository;
-import com.hien.back_end_app.repositories.MessageMediaRepository;
-import com.hien.back_end_app.repositories.MessageRepository;
-import com.hien.back_end_app.repositories.UserRepository;
+import com.hien.back_end_app.mappers.MessageMapper;
+import com.hien.back_end_app.mappers.NotificationMapper;
+import com.hien.back_end_app.repositories.*;
 import com.hien.back_end_app.utils.enums.ErrorCode;
+import com.hien.back_end_app.utils.enums.NotificationType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Service;
@@ -31,11 +29,14 @@ public class WebSocketService {
     private final FileService fileService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessageMediaRepository messageMediaRepository;
+    private final NotificationRepository notificationRepository;
+    private final NotificationMapper notificationMapper;
+    private final MessageMapper messageMapper;
 
     @Transactional
-    public MessageResponseDTO sendMessage(SocketMessageDTO request, Long conversationId, SimpMessageHeaderAccessor accessor) {
+    public void sendMessage(SocketMessageDTO request, Long conversationId, SimpMessageHeaderAccessor accessor) {
         if (request.getContent().isEmpty()) {
-            return null;
+            return;
         }
         // check conversation
         Conversation conversation = conversationRepository.findById(conversationId).
@@ -48,37 +49,52 @@ public class WebSocketService {
             throw new AppException(ErrorCode.USER_NOT_HAVE_CONVERSATION);
         }
 
-        //upload file to the cloud and get back url
-        MultipartFile file = fileService.convertToMultipartFile(request.getSocketMessageMediaDTO());
-        String fileUrl = fileService.uploadFile(file, request.getSocketMessageMediaDTO().getType(), "message_media");
 
-        // save the message to database
-        MessageMedia messageMedia = MessageMedia.builder()
-                .fileUrl(fileUrl)
-                .build();
-        Message message = Message.builder()
-                .content(request.getContent())
-                .sourceUser(createdUser)
+        if (request.getSocketMessageMediaDTO() == null) {
+            Message message = Message.builder()
+                    .content(request.getContent())
+                    .sourceUser(createdUser)
+                    .conversation(conversation)
+                    .messageMedia(null)
+                    .build();
+            messageRepository.save(message);
+
+            //send message
+            MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+            simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
+        } else {
+            //upload file to the cloud and get back url
+            MultipartFile file = fileService.convertToMultipartFile(request.getSocketMessageMediaDTO());
+            String fileUrl = fileService.uploadFile(file, request.getSocketMessageMediaDTO().getType(), "message_media");
+
+            // save the message to database
+            MessageMedia messageMedia = MessageMedia.builder()
+                    .fileUrl(fileUrl)
+                    .build();
+            Message message = Message.builder()
+                    .content(request.getContent())
+                    .sourceUser(createdUser)
+                    .conversation(conversation)
+                    .messageMedia(messageMedia)
+                    .build();
+            messageMedia.setMessage(message);
+            messageRepository.save(message);
+            messageMediaRepository.save(messageMedia);
+
+            //send message
+            MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+            simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
+        }
+
+        //create and send notification
+        Notification notification = Notification.builder()
+                .type(NotificationType.MESSAGE)
+                .content(createdUser.getFullName() + " just sent you a message at conversation " + conversationId)
+                .createdBy(createdUser)
                 .conversation(conversation)
-                .messageMedia(messageMedia)
                 .build();
-        messageMedia.setMessage(message);
-        messageRepository.save(message);
-        messageMediaRepository.save(messageMedia);
-
-        //send message
-        MessageResponseDTO messageResponseDTO = MessageResponseDTO.builder()
-                .id(message.getId())
-                .content(message.getContent())
-                .sourceId(message.getSourceUser().getId())
-                .conversationId(message.getConversation().getId())
-                .mediaResponseDTO(MediaResponseDTO.builder()
-                        .fileUrl(fileUrl)
-                        .build())
-                .build();
-
-        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
-        // send notification
-        return messageResponseDTO;
+        notificationRepository.save(notification);
+        NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, notificationResponseDTO);
     }
 }

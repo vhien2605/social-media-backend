@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WebSocketController {
     private final WebSocketService webSocketService;
-    
+
     @MessageMapping("/message/{conversationId}")
-    public MessageResponseDTO sendMessage(@DestinationVariable Integer conversationId, SocketMessageDTO request, SimpMessageHeaderAccessor accessor) {
-        return webSocketService.sendMessage(request, (long) conversationId, accessor);
+    public void sendMessage(@DestinationVariable Integer conversationId, SocketMessageDTO request, SimpMessageHeaderAccessor accessor) {
+        webSocketService.sendMessage(request, (long) conversationId, accessor);
     }
 }

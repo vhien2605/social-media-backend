@@ -59,6 +59,9 @@ public class FileService {
 
 
     public MultipartFile convertToMultipartFile(SocketMessageMediaDTO dto) {
+        if (dto == null) {
+            return null;
+        }
         byte[] fileBytes = Base64.getDecoder().decode(dto.getBase64Data());
         return new MockMultipartFile(
                 dto.getName(),
