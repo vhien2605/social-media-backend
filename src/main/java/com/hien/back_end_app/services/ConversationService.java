@@ -26,7 +26,7 @@ public class ConversationService {
     private final ConversationMapper conversationMapper;
 
     public ConversationResponseDTO create(CreateConversationRequestDTO dto) {
-        if (dto.getParticipants().size() > 1) {
+        if (dto.getParticipants().isEmpty()) {
             throw new AppException(ErrorCode.CONVERSATION_SIZE_INVALID);
         }
         String name = dto.getName();
@@ -40,6 +40,11 @@ public class ConversationService {
                 .participants(new HashSet<>(participants))
                 .name(name)
                 .build();
+        if (participants.size() == 1) {
+            conversation.setGroup(false);
+        } else {
+            conversation.setGroup(true);
+        }
         return conversationMapper.toDTO(conversationRepository.save(conversation));
     }
 
@@ -49,6 +54,4 @@ public class ConversationService {
         conversation.setGroup(true);
         return conversationMapper.toDTO(conversationRepository.save(conversation));
     }
-
-
 }

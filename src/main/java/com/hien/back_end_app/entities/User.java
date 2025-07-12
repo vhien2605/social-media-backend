@@ -76,4 +76,7 @@ public class User extends AbstractEntity {
 
     @OneToMany(mappedBy = "user")
     private Set<Album> albums;
+
+    @OneToMany(mappedBy = "user")
+    private Set<Conversation> conversations;
 }

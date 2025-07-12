@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -18,6 +17,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     public Optional<Conversation> findByConversationIdAndUserId(@Param("conversationId") long conversationId, @Param("userId") long userId);
 
     @EntityGraph(attributePaths = {
+            "user",
             "participants",
             "user.roles",
             "user.roles.permissions",
@@ -25,4 +25,11 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
             "participants.roles.permissions"
     })
     public Optional<Conversation> findById(Long id);
+
+    @EntityGraph(attributePaths = {
+            "user",
+            "participants"
+    })
+    @Query("SELECT c FROM Conversation c WHERE c.id=:id")
+    public Optional<Conversation> findByIdWithUserCreatedAndParticipants(@Param("id") Long id);
 }

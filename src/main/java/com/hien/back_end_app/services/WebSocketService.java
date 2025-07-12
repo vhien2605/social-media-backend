@@ -1,6 +1,7 @@
 package com.hien.back_end_app.services;
 
 
+import com.hien.back_end_app.dto.request.SocketAddMemberRequestDTO;
 import com.hien.back_end_app.dto.request.SocketMessageDTO;
 import com.hien.back_end_app.dto.response.socket.MessageResponseDTO;
 import com.hien.back_end_app.dto.response.socket.NotificationResponseDTO;
@@ -18,6 +19,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -102,5 +105,50 @@ public class WebSocketService {
         for (User u : participants) {
             simpMessagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/notifications", notificationResponseDTO);
         }
+    }
+
+
+    @Transactional
+    public void addMemberToConversation(SocketAddMemberRequestDTO dto, Long conversationId, SimpMessageHeaderAccessor accessor) {
+        String email = accessor.getUser().getName();
+        Set<Long> userIds = dto.getIds();
+        Conversation conversation = conversationRepository.findByIdWithUserCreatedAndParticipants(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        if (!conversation.getUser().getEmail().equals(email)) {
+            throw new AppException(ErrorCode.ACCESS_DENIED);
+        }
+
+        if (!conversation.isGroup()) {
+            throw new AppException(ErrorCode.CONVERSATION_SIZE_INVALID);
+        }
+        Set<User> participants = conversation.getParticipants();
+        // filter that user are already in the conversation will be removed from new adder
+        List<User> users = userRepository.findAllByIds(new ArrayList<>(userIds))
+                .stream().filter(u -> participants.stream().noneMatch(p -> p.getId() == u.getId())).toList();
+
+        if (users.isEmpty()) {
+            return;
+        }
+        
+        // concat set to add new members in conversation
+        participants.addAll(users);
+        conversation.setParticipants(participants);
+        conversationRepository.save(conversation);
+
+        String newUsersContent = "";
+        for (User u : users) {
+            newUsersContent = u.getFullName() + " ";
+        }
+
+        Message message = Message.builder()
+                .messageMedia(null)
+                .content(conversation.getUser().getFullName() + " just added new members: " + newUsersContent + " to the conversation")
+                .sourceUser(conversation.getUser())
+                .conversation(conversation)
+                .build();
+        messageRepository.save(message);
+        MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+        // send message
+        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
     }
 }

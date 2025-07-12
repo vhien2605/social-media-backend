@@ -1,15 +1,7 @@
 package com.hien.back_end_app.dto.response.socket;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hien.back_end_app.entities.Comment;
-import com.hien.back_end_app.entities.Conversation;
-import com.hien.back_end_app.entities.Post;
-import com.hien.back_end_app.entities.User;
 import com.hien.back_end_app.utils.enums.NotificationType;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

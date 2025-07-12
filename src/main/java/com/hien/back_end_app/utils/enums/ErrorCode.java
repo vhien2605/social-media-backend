@@ -18,7 +18,7 @@ public enum ErrorCode {
     TOKEN_EXPIRED(400, "given token is expired", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(400, "can't find any user with given email", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(401, "user unathorized", HttpStatus.UNAUTHORIZED),
-    ACCESS_DENIED(403, "you dont have permission to do this", HttpStatus.FORBIDDEN),
+    ACCESS_DENIED(403, "you are not allowed to do this action", HttpStatus.FORBIDDEN),
     AUTHORITY_TYPE_INVALID(400, "authority type is invalid, try again", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXIST(400, "role is not exist", HttpStatus.BAD_REQUEST),
     REGEX_INVALID(400, "regex is invalid", HttpStatus.BAD_REQUEST),
@@ -26,7 +26,8 @@ public enum ErrorCode {
     USER_NOT_HAVE_CONVERSATION(400, "user not have conversation", HttpStatus.BAD_REQUEST),
     CONVERSATION_NOT_EXIST(400, "conversation is not exist", HttpStatus.BAD_REQUEST),
     UPLOAD_FILE_FAILED(503, "service unavailable", HttpStatus.SERVICE_UNAVAILABLE),
-    CONVERSATION_SIZE_INVALID(400, "conversation size invalid", HttpStatus.BAD_REQUEST);
+    CONVERSATION_SIZE_INVALID(400, "conversation size invalid", HttpStatus.BAD_REQUEST),
+    ;
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;
