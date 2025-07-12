@@ -71,10 +71,9 @@ public class User extends AbstractEntity {
     @OneToMany(mappedBy = "createdBy")
     private Set<Post> posts;
 
-
     @OneToMany(mappedBy = "targetUser")
     private Set<Follow> follows;
-    
+
     @OneToMany(mappedBy = "user")
     private Set<Album> albums;
 }

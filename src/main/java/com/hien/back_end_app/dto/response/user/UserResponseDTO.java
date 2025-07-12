@@ -1,5 +1,6 @@
 package com.hien.back_end_app.dto.response.user;
 
+import com.hien.back_end_app.dto.response.authority.RoleResponseDTO;
 import com.hien.back_end_app.entities.Role;
 import com.hien.back_end_app.utils.enums.AuthProvider;
 import com.hien.back_end_app.utils.enums.UserStatus;
@@ -26,5 +27,5 @@ public class UserResponseDTO implements Serializable {
     private String address;
     private String education;
     private String work;
-    private Set<Role> roles;
+    private Set<RoleResponseDTO> roles;
 }

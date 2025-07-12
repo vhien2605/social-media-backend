@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -20,6 +21,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "roles.permissions"
     })
     public Optional<User> findByEmail(String email);
+
+    @EntityGraph(attributePaths = {
+            "roles",
+            "roles.permissions"
+    })
+    @Query("SELECT u FROM User u WHERE u.id IN :ids")
+    public List<User> findAllByIds(@Param("ids") List<Long> ids);
 
 
     @Modifying

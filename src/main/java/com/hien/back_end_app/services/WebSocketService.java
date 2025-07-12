@@ -2,7 +2,6 @@ package com.hien.back_end_app.services;
 
 
 import com.hien.back_end_app.dto.request.SocketMessageDTO;
-import com.hien.back_end_app.dto.response.socket.MediaResponseDTO;
 import com.hien.back_end_app.dto.response.socket.MessageResponseDTO;
 import com.hien.back_end_app.dto.response.socket.NotificationResponseDTO;
 import com.hien.back_end_app.entities.*;
@@ -17,8 +16,9 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -65,7 +65,8 @@ public class WebSocketService {
         } else {
             //upload file to the cloud and get back url
             MultipartFile file = fileService.convertToMultipartFile(request.getSocketMessageMediaDTO());
-            String fileUrl = fileService.uploadFile(file, request.getSocketMessageMediaDTO().getType(), "message_media");
+            String fileUrl = fileService.uploadFile(file,
+                    request.getSocketMessageMediaDTO().getType(), "message_media");
 
             // save the message to database
             MessageMedia messageMedia = MessageMedia.builder()
@@ -86,7 +87,7 @@ public class WebSocketService {
             simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
         }
 
-        //create and send notification
+        //create notification
         Notification notification = Notification.builder()
                 .type(NotificationType.MESSAGE)
                 .content(createdUser.getFullName() + " just sent you a message at conversation " + conversationId)
@@ -94,7 +95,12 @@ public class WebSocketService {
                 .conversation(conversation)
                 .build();
         notificationRepository.save(notification);
+
+        // send notification
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
-        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, notificationResponseDTO);
+        Set<User> participants = conversation.getParticipants();
+        for (User u : participants) {
+            simpMessagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/notifications", notificationResponseDTO);
+        }
     }
 }

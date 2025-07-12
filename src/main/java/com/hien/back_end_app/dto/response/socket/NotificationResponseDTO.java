@@ -24,8 +24,6 @@ public class NotificationResponseDTO implements Serializable {
     private long id;
     private String content;
     private NotificationType type;
-
-
     private long createdById;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

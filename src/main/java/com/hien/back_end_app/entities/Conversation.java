@@ -1,10 +1,7 @@
 package com.hien.back_end_app.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
@@ -15,6 +12,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Conversation extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +24,7 @@ public class Conversation extends AbstractEntity {
 
     @Column(name = "is_group")
     private boolean isGroup;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User user;
@@ -34,4 +32,8 @@ public class Conversation extends AbstractEntity {
     @ManyToMany
     @JoinTable(name = "participant_conversation", joinColumns = @JoinColumn(name = "conversation_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> participants;
+
+
+    @OneToMany(mappedBy = "conversation")
+    private Set<Message> messages;
 }

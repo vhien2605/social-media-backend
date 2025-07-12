@@ -25,7 +25,8 @@ public enum ErrorCode {
     USER_NOT_SUBSCRIBE(400, "user dont subrice this port", HttpStatus.BAD_REQUEST),
     USER_NOT_HAVE_CONVERSATION(400, "user not have conversation", HttpStatus.BAD_REQUEST),
     CONVERSATION_NOT_EXIST(400, "conversation is not exist", HttpStatus.BAD_REQUEST),
-    UPLOAD_FILE_FAILED(503, "service unavailable", HttpStatus.SERVICE_UNAVAILABLE);
+    UPLOAD_FILE_FAILED(503, "service unavailable", HttpStatus.SERVICE_UNAVAILABLE),
+    CONVERSATION_SIZE_INVALID(400, "conversation size invalid", HttpStatus.BAD_REQUEST);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;
