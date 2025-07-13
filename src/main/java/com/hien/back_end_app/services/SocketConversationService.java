@@ -1,6 +1,7 @@
 package com.hien.back_end_app.services;
 
 
+import com.hien.back_end_app.dto.request.CreateConversationRequestDTO;
 import com.hien.back_end_app.dto.request.SocketAddMemberRequestDTO;
 import com.hien.back_end_app.dto.request.SocketDeleteMemberRequestDTO;
 import com.hien.back_end_app.dto.request.SocketMessageDTO;
@@ -22,13 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class WebSocketService {
+public class SocketConversationService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
@@ -196,5 +198,72 @@ public class WebSocketService {
         MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
         //send stomp message
         simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
+    }
+
+    @Transactional
+    public void createConversation(CreateConversationRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        String name = dto.getName();
+        Set<Long> participantIds = dto.getParticipants();
+        String email = accessor.getUser().getName();
+
+        User createdUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        List<User> participants = userRepository.findAllByIds(new ArrayList<>(participantIds));
+
+        Conversation conversation = Conversation.builder()
+                .name(name)
+                .user(createdUser)
+                .isGroup(false)
+                .participants(new HashSet<>(participants))
+                .build();
+
+        // save conversation
+        conversationRepository.save(conversation);
+
+        //save and send message to conversation
+        Message message = Message.builder()
+                .conversation(conversation)
+                .sourceUser(createdUser)
+                .content(createdUser.getFullName() + " just create conversation ")
+                .build();
+        messageRepository.save(message);
+        MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversation.getId(), messageResponseDTO);
+
+        // save and send notifications to participants
+        Notification notification = Notification.builder()
+                .conversation(conversation)
+                .createdBy(createdUser)
+                .content(createdUser.getFullName() + " just create conversation with you, let's check it out")
+                .type(NotificationType.MESSAGE)
+                .build();
+        notificationRepository.save(notification);
+        NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+        for (User u : participants) {
+            simpMessagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/notifications", notificationResponseDTO);
+        }
+    }
+
+    @Transactional
+    public void changeToGroup(Long conversationId, SimpMessageHeaderAccessor accessor) {
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        User createdUser = conversation.getUser();
+        String email = accessor.getUser().getName();
+        if (!createdUser.getEmail().equals(email)) {
+            throw new AppException(ErrorCode.ACCESS_DENIED);
+        }
+        conversation.setGroup(true);
+        conversationRepository.save(conversation);
+        
+        //save and send message to conversation
+        Message message = Message.builder()
+                .conversation(conversation)
+                .sourceUser(createdUser)
+                .content(createdUser.getFullName() + " just change conversation to group chat")
+                .build();
+        messageRepository.save(message);
+        MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversation.getId(), messageResponseDTO);
     }
 }
