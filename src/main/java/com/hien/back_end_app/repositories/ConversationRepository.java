@@ -2,6 +2,8 @@ package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.Conversation;
 import com.hien.back_end_app.entities.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -44,4 +46,27 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     @Modifying
     @Query(value = "DELETE FROM participant_conversation p WHERE p.user_id IN :ids", nativeQuery = true)
     public void deleteJoinRecords(@Param("ids") List<Long> ids);
+
+
+    @EntityGraph(attributePaths = {
+            "user",
+            "participants",
+            "user.roles",
+            "user.roles.permissions",
+            "participants.roles",
+            "participants.roles.permissions"
+    })
+    @Override
+    Page<Conversation> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+            "user",
+            "participants",
+            "user.roles",
+            "user.roles.permissions",
+            "participants.roles",
+            "participants.roles.permissions"
+    })
+    @Query("SELECT u FROM User u WHERE u.email=:email")
+    Page<Conversation> findAllByUserEmail(@Param("email") String email, Pageable pageable);
 }
