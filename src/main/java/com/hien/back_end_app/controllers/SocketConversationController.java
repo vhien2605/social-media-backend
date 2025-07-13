@@ -1,9 +1,10 @@
 package com.hien.back_end_app.controllers;
 
+import com.hien.back_end_app.dto.request.CreateConversationRequestDTO;
 import com.hien.back_end_app.dto.request.SocketAddMemberRequestDTO;
 import com.hien.back_end_app.dto.request.SocketDeleteMemberRequestDTO;
 import com.hien.back_end_app.dto.request.SocketMessageDTO;
-import com.hien.back_end_app.services.WebSocketService;
+import com.hien.back_end_app.services.SocketConversationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -15,12 +16,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Validated
-public class WebSocketController {
-    private final WebSocketService webSocketService;
+public class SocketConversationController {
+    private final SocketConversationService webSocketService;
 
     @MessageMapping("/message/{conversationId}")
     public void sendMessage(@DestinationVariable long conversationId, @Valid SocketMessageDTO request, SimpMessageHeaderAccessor accessor) {
         webSocketService.sendMessage(request, conversationId, accessor);
+    }
+
+    @MessageMapping("/message/conversation/create")
+    public void createConversation(@Valid CreateConversationRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        webSocketService.createConversation(dto, accessor);
+    }
+
+    @MessageMapping("/message/conversation/{conversationId}/to-group")
+    public void updateToGroup(@DestinationVariable long conversationId, SimpMessageHeaderAccessor accessor) {
+        webSocketService.changeToGroup(conversationId, accessor);
     }
 
     @MessageMapping("/message/add-member/{conversationId}")
