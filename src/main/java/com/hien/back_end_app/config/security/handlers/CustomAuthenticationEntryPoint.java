@@ -1,11 +1,13 @@
 package com.hien.back_end_app.config.security.handlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hien.back_end_app.dto.response.ApiErrorResponse;
+import com.hien.back_end_app.utils.enums.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,14 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         log.error("-----------------------------------authentication entry point start------------------------------------");
         response.setStatus(HttpStatus.OK.value());
         response.setContentType("application/json");
-        
+        ApiErrorResponse apiErrorResponse = ApiErrorResponse.builder()
+                .status(ErrorCode.UNAUTHORIZED.getCode())
+                .message(ErrorCode.UNAUTHORIZED.getMessage())
+                .path(request.getRequestURI())
+                .error(ErrorCode.UNAUTHORIZED.name())
+                .build();
+        ObjectMapper objectMapper = new ObjectMapper();
+        // convert object to string
+        response.getWriter().write(objectMapper.writeValueAsString(apiErrorResponse));
     }
 }

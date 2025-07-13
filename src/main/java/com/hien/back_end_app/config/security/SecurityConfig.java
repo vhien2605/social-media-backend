@@ -1,6 +1,8 @@
 package com.hien.back_end_app.config.security;
 
 
+import com.hien.back_end_app.config.security.handlers.CustomAccessDeniedHandler;
+import com.hien.back_end_app.config.security.handlers.CustomAuthenticationEntryPoint;
 import com.hien.back_end_app.config.security.oauth2.Oauth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +30,8 @@ import java.util.List;
 public class SecurityConfig {
     private final Oauth2SuccessHandler oauth2SuccessHandler;
     private final CustomJwtDecoder customJwtDecoder;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     private final String[] WHITE_LIST_URL = {
             "/v1/auth/**", "/ws/**"
@@ -56,6 +60,8 @@ public class SecurityConfig {
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                                 .decoder(customJwtDecoder)
                         )
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
