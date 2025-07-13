@@ -2,6 +2,7 @@ package com.hien.back_end_app.services;
 
 
 import com.hien.back_end_app.dto.request.SocketAddMemberRequestDTO;
+import com.hien.back_end_app.dto.request.SocketDeleteMemberRequestDTO;
 import com.hien.back_end_app.dto.request.SocketMessageDTO;
 import com.hien.back_end_app.dto.response.socket.MessageResponseDTO;
 import com.hien.back_end_app.dto.response.socket.NotificationResponseDTO;
@@ -13,6 +14,7 @@ import com.hien.back_end_app.repositories.*;
 import com.hien.back_end_app.utils.enums.ErrorCode;
 import com.hien.back_end_app.utils.enums.NotificationType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,6 +27,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class WebSocketService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
@@ -129,15 +132,15 @@ public class WebSocketService {
         if (users.isEmpty()) {
             return;
         }
-        
+
         // concat set to add new members in conversation
         participants.addAll(users);
         conversation.setParticipants(participants);
         conversationRepository.save(conversation);
 
-        String newUsersContent = "";
+        StringBuilder newUsersContent = new StringBuilder();
         for (User u : users) {
-            newUsersContent = u.getFullName() + " ";
+            newUsersContent.append(u.getFullName()).append(" ");
         }
 
         Message message = Message.builder()
@@ -149,6 +152,49 @@ public class WebSocketService {
         messageRepository.save(message);
         MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
         // send message
+        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
+    }
+
+    public void deleteMemberFromConversation(SocketDeleteMemberRequestDTO dto, Long conversationId, SimpMessageHeaderAccessor accessor) {
+        Set<Long> ids = dto.getIds();
+        String email = accessor.getUser().getName();
+        Conversation conversation = conversationRepository.findByIdWithUserCreatedAndParticipants(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        User createdUser = conversation.getUser();
+        if (!createdUser.getEmail().equals(email)) {
+            log.error("---------------access denied------------------");
+            throw new AppException(ErrorCode.ACCESS_DENIED);
+        }
+        Set<User> participants = conversation.getParticipants();
+
+        if (ids.size() > participants.size()) {
+            log.error("---------------input size is greater than participants size------------------");
+            throw new AppException(ErrorCode.CONVERSATION_SIZE_INVALID);
+        }
+
+        if (ids.size() == participants.size()) {
+            // when delele all the participants->delete conversation and jointable
+            conversationRepository.deleteJoinRecords(new ArrayList<>(ids));
+            conversationRepository.deleteById(conversationId);
+            return;
+        }
+        // delete ids in jointable and send message
+        conversationRepository.deleteJoinRecords(new ArrayList<>(ids));
+
+        //create message
+        StringBuilder newUsersContent = new StringBuilder();
+        for (Long u : ids) {
+            newUsersContent.append(u).append(" ");
+        }
+        Message message = Message.builder()
+                .messageMedia(null)
+                .content(conversation.getUser().getFullName() + " just deleted members: " + newUsersContent + " from the conversation")
+                .sourceUser(conversation.getUser())
+                .conversation(conversation)
+                .build();
+        messageRepository.save(message);
+        MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+        //send stomp message
         simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
     }
 }
