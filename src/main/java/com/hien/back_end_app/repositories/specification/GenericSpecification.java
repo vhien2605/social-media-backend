@@ -1,9 +1,7 @@
 package com.hien.back_end_app.repositories.specification;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import com.hien.back_end_app.entities.User;
+import jakarta.persistence.criteria.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
@@ -16,6 +14,10 @@ public class GenericSpecification<T extends SupportsSpecification> implements Sp
 
     @Override
     public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
+        if (criteria.getKey().equalsIgnoreCase("email")) {
+            Join<T, User> join = root.join("user", JoinType.INNER);
+            return buildJoinUserPredicate(join, query, criteriaBuilder);
+        }
         return buildNormalPredicate(root, query, criteriaBuilder);
     }
     //other Predicate join field for later requirements
@@ -31,5 +33,9 @@ public class GenericSpecification<T extends SupportsSpecification> implements Sp
             case LIKE -> builder.like(root.get(criteria.getKey()), "%" + criteria.getValue().toString() + "%");
             case CONTAINS -> builder.like(root.get(criteria.getKey()), "%" + criteria.getValue() + "%");
         };
+    }
+
+    private Predicate buildJoinUserPredicate(Join<T, ?> join, CriteriaQuery<?> query, CriteriaBuilder builder) {
+        return builder.equal(builder.lower(join.get("email")), criteria.getValue().toString().toLowerCase());
     }
 }

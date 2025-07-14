@@ -1,5 +1,6 @@
 package com.hien.back_end_app.entities;
 
+import com.hien.back_end_app.repositories.specification.SupportsSpecification;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Conversation extends AbstractEntity {
+public class Conversation extends AbstractEntity implements SupportsSpecification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

@@ -10,7 +10,6 @@ import java.util.Objects;
 
 @Setter
 @Getter
-@Builder
 public class SpecSearchCriteria {
     private final String key;
     private final SearchOperation operation;
