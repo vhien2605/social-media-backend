@@ -23,7 +23,9 @@ public class ConversationService {
 
     public PageResponseDTO<Object> getAllConversations(Pageable pageable) {
         Page<Conversation> conversations = conversationRepository.findAll(pageable);
-        List<ConversationResponseDTO> dtos = conversations.stream().map(conversationMapper::toDTO).toList();
+        List<Long> conversationIds = conversations.stream().map(Conversation::getId).toList();
+        List<Conversation> fetchedConversations = conversationRepository.findAllWithIdsAndReferences(conversationIds);
+        List<ConversationResponseDTO> dtos = fetchedConversations.stream().map(conversationMapper::toDTO).toList();
         return PageResponseDTO.builder()
                 .data(dtos)
                 .pageNo(pageable.getPageNumber())
@@ -35,7 +37,9 @@ public class ConversationService {
     public PageResponseDTO<Object> getMyConversations(Pageable pageable) {
         String email = GlobalMethod.extractEmailFromContext();
         Page<Conversation> conversations = conversationRepository.findAllByUserEmail(email, pageable);
-        List<ConversationResponseDTO> dtos = conversations.stream().map(conversationMapper::toDTO).toList();
+        List<Long> conversationIds = conversations.stream().map(Conversation::getId).toList();
+        List<ConversationResponseDTO> dtos = conversationRepository.findAllWithIdsAndReferences(conversationIds)
+                .stream().map(conversationMapper::toDTO).toList();
         return PageResponseDTO.builder()
                 .data(dtos)
                 .pageNo(pageable.getPageNumber())

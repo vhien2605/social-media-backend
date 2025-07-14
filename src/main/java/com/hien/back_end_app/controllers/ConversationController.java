@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ConversationController {
     private final ConversationService conversationService;
 
-
     @GetMapping("/all-conversations")
     @PreAuthorize("hasRole('SYS_ADMIN')")
     public ApiResponse getAllConversations(Pageable pageable) {
@@ -39,6 +38,24 @@ public class ConversationController {
                 .status(200)
                 .message("get my conversations successfully")
                 .data(conversationService.getMyConversations(pageable))
+                .build();
+    }
+
+    @GetMapping("/my-conversations/advanced-filter")
+    public ApiResponse getMyConversationsWithAdvancedFilter() {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get my conversations filter successfully")
+                .data(null)
+                .build();
+    }
+
+    @GetMapping("/all-conversations/advanced-filter")
+    public ApiResponse getAllConversationsWithAdvancedFilter() {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get all conversations filter successfully")
+                .data(null)
                 .build();
     }
 }
