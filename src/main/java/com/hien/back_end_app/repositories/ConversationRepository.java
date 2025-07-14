@@ -23,9 +23,9 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
     @EntityGraph(attributePaths = {
             "user",
-            "participants",
             "user.roles",
             "user.roles.permissions",
+            "participants",
             "participants.roles",
             "participants.roles.permissions"
     })
@@ -48,25 +48,22 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     public void deleteJoinRecords(@Param("ids") List<Long> ids);
 
 
-    @EntityGraph(attributePaths = {
-            "user",
-            "participants",
-            "user.roles",
-            "user.roles.permissions",
-            "participants.roles",
-            "participants.roles.permissions"
-    })
     @Override
     Page<Conversation> findAll(Pageable pageable);
 
     @EntityGraph(attributePaths = {
             "user",
-            "participants",
             "user.roles",
             "user.roles.permissions",
+            "participants",
             "participants.roles",
             "participants.roles.permissions"
     })
-    @Query("SELECT u FROM User u WHERE u.email=:email")
+    @Query("SELECT c FROM Conversation c WHERE c.id IN :ids")
+    List<Conversation> findAllWithIdsAndReferences(@Param("ids") List<Long> ids);
+
+
+    //get with no fetch
+    @Query("SELECT c FROM Conversation c INNER JOIN c.user u WHERE u.email=:email")
     Page<Conversation> findAllByUserEmail(@Param("email") String email, Pageable pageable);
 }

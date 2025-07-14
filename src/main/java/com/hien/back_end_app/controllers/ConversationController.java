@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ConversationController {
     private final ConversationService conversationService;
 
-
     @GetMapping("/all-conversations")
     @PreAuthorize("hasRole('SYS_ADMIN')")
     public ApiResponse getAllConversations(Pageable pageable) {
