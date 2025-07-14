@@ -49,7 +49,7 @@ public class ConversationController {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get my conversations filter successfully")
-                .data(null)
+                .data(conversationService.getMyConversationsWithAdvancedFilter(pageable, conversation, sortBy))
                 .build();
     }
 

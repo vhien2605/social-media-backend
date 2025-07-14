@@ -1,5 +1,6 @@
 package com.hien.back_end_app.entities;
 
+import com.hien.back_end_app.repositories.specification.SupportsSpecification;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Conversation extends AbstractEntity {
+public class Conversation extends AbstractEntity implements SupportsSpecification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -32,7 +33,7 @@ public class Conversation extends AbstractEntity {
     @ManyToMany
     @JoinTable(name = "participant_conversation", joinColumns = @JoinColumn(name = "conversation_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> participants;
-    
+
     @OneToMany(mappedBy = "conversation")
     private Set<Message> messages;
 }

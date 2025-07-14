@@ -4,10 +4,8 @@ import com.hien.back_end_app.entities.Conversation;
 import com.hien.back_end_app.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +15,7 @@ import java.util.Optional;
 
 
 @Repository
-public interface ConversationRepository extends JpaRepository<Conversation, Long> {
+public interface ConversationRepository extends JpaRepository<Conversation, Long>, JpaSpecificationExecutor<Conversation> {
     @Query("SELECT c FROM Conversation c INNER JOIN c.participants u WHERE c.id=:conversationId AND u.id=:userId")
     public Optional<Conversation> findByConversationIdAndUserId(@Param("conversationId") long conversationId, @Param("userId") long userId);
 
@@ -50,21 +48,26 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
     @Override
     Page<Conversation> findAll(Pageable pageable);
+    
+    //get with no fetch
+    @Query("SELECT c FROM Conversation c INNER JOIN c.user u WHERE u.email=:email")
+    Page<Conversation> findAllByUserEmail(@Param("email") String email, Pageable pageable);
+
+    @Query("SELECT c FROM Conversation c INNER JOIN c.user u WHERE u.email=:email")
+    List<Conversation> findAllWithUserEmailNoPagination(@Param("email") String email);
+
+
+    @Override
+    Page<Conversation> findAll(Specification<Conversation> spec, Pageable pageable);
+
 
     @Query("""
             SELECT DISTINCT c FROM Conversation c
             LEFT JOIN FETCH c.user u
             LEFT JOIN FETCH u.roles ur
             LEFT JOIN FETCH ur.permissions
-            LEFT JOIN FETCH c.participants p
-            LEFT JOIN FETCH p.roles pr
-            LEFT JOIN FETCH pr.permissions
             WHERE c.id IN :ids
             """
     )
-    List<Conversation> findAllWithIdsAndReferences(@Param("ids") List<Long> ids);
-
-    //get with no fetch
-    @Query("SELECT c FROM Conversation c INNER JOIN c.user u WHERE u.email=:email")
-    Page<Conversation> findAllByUserEmail(@Param("email") String email, Pageable pageable);
+    List<Conversation> findAllWithIdsAndCreatedUserReferences(@Param("ids") List<Long> ids);
 }
