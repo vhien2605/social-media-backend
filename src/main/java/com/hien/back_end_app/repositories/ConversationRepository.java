@@ -51,17 +51,18 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     @Override
     Page<Conversation> findAll(Pageable pageable);
 
-    @EntityGraph(attributePaths = {
-            "user",
-            "user.roles",
-            "user.roles.permissions",
-            "participants",
-            "participants.roles",
-            "participants.roles.permissions"
-    })
-    @Query("SELECT c FROM Conversation c WHERE c.id IN :ids")
+    @Query("""
+            SELECT DISTINCT c FROM Conversation c
+            LEFT JOIN FETCH c.user u
+            LEFT JOIN FETCH u.roles ur
+            LEFT JOIN FETCH ur.permissions
+            LEFT JOIN FETCH c.participants p
+            LEFT JOIN FETCH p.roles pr
+            LEFT JOIN FETCH pr.permissions
+            WHERE c.id IN :ids
+            """
+    )
     List<Conversation> findAllWithIdsAndReferences(@Param("ids") List<Long> ids);
-
 
     //get with no fetch
     @Query("SELECT c FROM Conversation c INNER JOIN c.user u WHERE u.email=:email")

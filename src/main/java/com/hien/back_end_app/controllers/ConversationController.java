@@ -40,4 +40,22 @@ public class ConversationController {
                 .data(conversationService.getMyConversations(pageable))
                 .build();
     }
+
+    @GetMapping("/my-conversations/advanced-filter")
+    public ApiResponse getMyConversationsWithAdvancedFilter() {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get my conversations filter successfully")
+                .data(null)
+                .build();
+    }
+
+    @GetMapping("/all-conversations/advanced-filter")
+    public ApiResponse getAllConversationsWithAdvancedFilter() {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get all conversations filter successfully")
+                .data(null)
+                .build();
+    }
 }
