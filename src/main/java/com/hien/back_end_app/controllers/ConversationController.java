@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -42,7 +43,9 @@ public class ConversationController {
     }
 
     @GetMapping("/my-conversations/advanced-filter")
-    public ApiResponse getMyConversationsWithAdvancedFilter() {
+    public ApiResponse getMyConversationsWithAdvancedFilter(Pageable pageable
+            , @RequestParam(value = "conversation", required = false) String[] conversation
+            , @RequestParam(value = "sortBy", defaultValue = "id:asc") String[] sortBy) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get my conversations filter successfully")
@@ -51,7 +54,9 @@ public class ConversationController {
     }
 
     @GetMapping("/all-conversations/advanced-filter")
-    public ApiResponse getAllConversationsWithAdvancedFilter() {
+    public ApiResponse getAllConversationsWithAdvancedFilter(Pageable pageable
+            , @RequestParam(value = "conversation", required = false) String[] conversation
+            , @RequestParam(value = "sortBy", defaultValue = "id:asc") String[] sortBy) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get all conversations filter successfully")

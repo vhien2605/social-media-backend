@@ -2,6 +2,7 @@ package com.hien.back_end_app.entities;
 
 import com.hien.back_end_app.utils.anotations.EnumPattern;
 import com.hien.back_end_app.utils.enums.AuthProvider;
+import com.hien.back_end_app.utils.enums.Gender;
 import com.hien.back_end_app.utils.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -29,7 +30,6 @@ public class User extends AbstractEntity {
     private String email;
 
     @Column(name = "password")
-    @NotBlank(message = "password must not be blank")
     private String password;
 
     @Column(name = "auth_provider")
@@ -44,6 +44,11 @@ public class User extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     @EnumPattern(name = "user_status", regexp = "ONLINE|OFFLINE")
     private UserStatus userStatus;
+
+    @Column(name = "gender")
+    @Enumerated(EnumType.STRING)
+    @EnumPattern(name = "user_gender", regexp = "MALE|FEMALE")
+    private Gender gender;
 
     @Column(name = "full_name")
     @NotBlank(message = "name must not be blank")
