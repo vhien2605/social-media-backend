@@ -56,9 +56,6 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
             LEFT JOIN FETCH c.user u
             LEFT JOIN FETCH u.roles ur
             LEFT JOIN FETCH ur.permissions
-            LEFT JOIN FETCH c.participants p
-            LEFT JOIN FETCH p.roles pr
-            LEFT JOIN FETCH pr.permissions
             WHERE c.id IN :ids
             """
     )

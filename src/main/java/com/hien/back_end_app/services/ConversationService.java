@@ -47,4 +47,9 @@ public class ConversationService {
                 .totalPage(conversations.getTotalPages())
                 .build();
     }
+
+
+    public PageResponseDTO<Object> getMyConversationsWithAdvancedFilter(Pageable pageable, String[] conversation, String[] sortBy) {
+
+    }
 }

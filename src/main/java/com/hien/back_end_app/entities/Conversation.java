@@ -32,7 +32,7 @@ public class Conversation extends AbstractEntity {
     @ManyToMany
     @JoinTable(name = "participant_conversation", joinColumns = @JoinColumn(name = "conversation_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> participants;
-    
+
     @OneToMany(mappedBy = "conversation")
     private Set<Message> messages;
 }
