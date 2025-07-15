@@ -4,15 +4,13 @@ package com.hien.back_end_app.controllers;
 import com.hien.back_end_app.dto.response.ApiResponse;
 import com.hien.back_end_app.dto.response.ApiSuccessResponse;
 import com.hien.back_end_app.services.ConversationService;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @Slf4j
@@ -53,6 +51,7 @@ public class ConversationController {
                 .build();
     }
 
+    @PreAuthorize("hasRole('SYS_ADMIN')")
     @GetMapping("/all-conversations/advanced-filter")
     public ApiResponse getAllConversationsWithAdvancedFilter(Pageable pageable
             , @RequestParam(value = "conversation", required = false) String[] conversation
@@ -60,7 +59,16 @@ public class ConversationController {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get all conversations filter successfully")
-                .data(null)
+                .data(conversationService.getAllConversationsWithAdvancedFilter(pageable, conversation, sortBy))
+                .build();
+    }
+
+    @GetMapping("/{conversationId}/details")
+    public ApiResponse getConversationInformationDetail(@PathVariable @Min(value = 0, message = "conversationId must not negative") Long conversationId) {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get conversation detail information successfully")
+                .data(conversationService.getConversationDetail(conversationId))
                 .build();
     }
 }
