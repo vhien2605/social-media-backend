@@ -115,6 +115,55 @@ public class ConversationService {
     }
 
     public PageResponseDTO<Object> getAllConversationsWithAdvancedFilter(Pageable pageable, String[] conversation, String[] sortBy) {
-        return null;
+        SpecificationBuilder<Conversation> builder = new SpecificationBuilder<>();
+        Pattern pattern = Pattern.compile(AppConst.SEARCH_SPEC_OPERATOR);
+        Pattern sortPattern = Pattern.compile(AppConst.SORT_BY);
+
+        // loop conversation and build specification
+        for (String s : conversation) {
+            Matcher matcher = pattern.matcher(s);
+            if (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3),
+                        matcher.group(4), matcher.group(5), matcher.group(6));
+            }
+        }
+        Specification<Conversation> specification = builder.build();
+
+        // insert sort property into pageable
+        List<Sort.Order> sortOrders = new ArrayList<>();
+        for (String sb : sortBy) {
+            Matcher sortMatcher = sortPattern.matcher(sb);
+            if (sortMatcher.find()) {
+                String field = sortMatcher.group(1);
+                String value = sortMatcher.group(3);
+                Sort.Direction direction = (value.equalsIgnoreCase("ASC")) ? Sort.Direction.ASC : Sort.Direction.DESC;
+                sortOrders.add(new Sort.Order(direction, field));
+            }
+        }
+        Sort sort = Sort.by(sortOrders);
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+
+        Page<Conversation> conversations = conversationRepository.findAll(specification, pageable);
+        List<Long> conversationIds = conversations.stream().map(Conversation::getId).toList();
+
+        // fetched conversation
+        List<Conversation> fetchedConversations = conversationRepository.findAllWithIdsAndCreatedUserReferences(conversationIds);
+        // create map to store sort order in pagination
+        Map<Long, Conversation> idConversationMap = fetchedConversations
+                .stream()
+                .collect(Collectors.toMap(Conversation::getId, c -> c));
+
+        List<ConversationResponseDTO> dtos = conversationIds.stream()
+                .map(idConversationMap::get)
+                .map(conversationMapper::toDTO)
+                .toList();
+        return PageResponseDTO.builder()
+                .pageNo(pageable.getPageNumber())
+                .pageSize(pageable.getPageSize())
+                .totalPage(conversations.getTotalPages())
+                .data(dtos)
+                .build();
     }
 }

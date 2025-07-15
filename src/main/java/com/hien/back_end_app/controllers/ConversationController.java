@@ -60,7 +60,7 @@ public class ConversationController {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get all conversations filter successfully")
-                .data(null)
+                .data(conversationService.getAllConversationsWithAdvancedFilter(pageable, conversation, sortBy))
                 .build();
     }
 }
