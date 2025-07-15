@@ -19,15 +19,18 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     @Query("SELECT c FROM Conversation c INNER JOIN c.participants u WHERE c.id=:conversationId AND u.id=:userId")
     public Optional<Conversation> findByConversationIdAndUserId(@Param("conversationId") long conversationId, @Param("userId") long userId);
 
-    @EntityGraph(attributePaths = {
-            "user",
-            "user.roles",
-            "user.roles.permissions",
-            "participants",
-            "participants.roles",
-            "participants.roles.permissions"
-    })
-    public Optional<Conversation> findById(Long id);
+
+    @Query("""
+            SELECT DISTINCT c FROM Conversation c
+            JOIN FETCH c.user cu
+            JOIN FETCH cu.roles cur
+            JOIN FETCH cur.permissions
+            JOIN FETCH c.participants cp
+            JOIN FETCH cp.roles cpr
+            JOIN FETCH cpr.permissions
+            WHERE c.id=:id
+            """)
+    public Optional<Conversation> findByIdWithDetailParticipants(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {
             "user",
@@ -48,7 +51,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
     @Override
     Page<Conversation> findAll(Pageable pageable);
-    
+
     //get with no fetch
     @Query("SELECT c FROM Conversation c INNER JOIN c.user u WHERE u.email=:email")
     Page<Conversation> findAllByUserEmail(@Param("email") String email, Pageable pageable);

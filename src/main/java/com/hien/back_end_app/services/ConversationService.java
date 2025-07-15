@@ -4,11 +4,13 @@ package com.hien.back_end_app.services;
 import com.hien.back_end_app.dto.response.PageResponseDTO;
 import com.hien.back_end_app.dto.response.conversation.ConversationResponseDTO;
 import com.hien.back_end_app.entities.Conversation;
+import com.hien.back_end_app.exceptions.AppException;
 import com.hien.back_end_app.mappers.ConversationMapper;
 import com.hien.back_end_app.repositories.ConversationRepository;
 import com.hien.back_end_app.repositories.specification.SpecificationBuilder;
 import com.hien.back_end_app.utils.commons.AppConst;
 import com.hien.back_end_app.utils.commons.GlobalMethod;
+import com.hien.back_end_app.utils.enums.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -166,4 +168,11 @@ public class ConversationService {
                 .data(dtos)
                 .build();
     }
+
+    public ConversationResponseDTO getConversationDetail(Long conversationId) {
+        Conversation conversation = conversationRepository.findByIdWithDetailParticipants(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        return conversationMapper.toDTO(conversation);
+    }
+
 }
