@@ -2,6 +2,7 @@ package com.hien.back_end_app.services;
 
 
 import com.hien.back_end_app.dto.response.PageResponseDTO;
+import com.hien.back_end_app.dto.response.conversation.ConversationInformationResponseDTO;
 import com.hien.back_end_app.dto.response.conversation.ConversationResponseDTO;
 import com.hien.back_end_app.entities.Conversation;
 import com.hien.back_end_app.exceptions.AppException;
@@ -169,10 +170,10 @@ public class ConversationService {
                 .build();
     }
 
-    public ConversationResponseDTO getConversationDetail(Long conversationId) {
+    public ConversationInformationResponseDTO getConversationDetail(Long conversationId) {
         Conversation conversation = conversationRepository.findByIdWithDetailParticipants(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
-        return conversationMapper.toDTO(conversation);
+        return conversationMapper.toDetailDTO(conversation);
     }
 
 }
