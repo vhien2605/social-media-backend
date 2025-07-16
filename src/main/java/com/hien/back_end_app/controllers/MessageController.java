@@ -29,4 +29,17 @@ public class MessageController {
                 .data(messageService.getMessageWithPagination(conversationId, pageable))
                 .build();
     }
+
+    @GetMapping("/get-messages/{conversationId}/advanced-filter")
+    public ApiResponse getMessageInConversationWithFilter(@PathVariable @Min(value = 0, message = "conversationId must not be negative") Long conversationId
+            , Pageable pageable
+            , String[] message
+            , String[] sortBy
+    ) {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get messages in conversation successfully")
+                .data(messageService.getMessageByConversationIdWithFilter(conversationId, pageable, message, sortBy))
+                .build();
+    }
 }

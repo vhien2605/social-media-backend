@@ -1,5 +1,6 @@
 package com.hien.back_end_app.repositories.specification;
 
+import com.hien.back_end_app.entities.Conversation;
 import com.hien.back_end_app.entities.User;
 import jakarta.persistence.criteria.*;
 import lombok.Getter;
@@ -17,6 +18,9 @@ public class GenericSpecification<T extends SupportsSpecification> implements Sp
         if (criteria.getKey().equalsIgnoreCase("email")) {
             Join<T, User> join = root.join("user", JoinType.INNER);
             return buildJoinUserPredicate(join, query, criteriaBuilder);
+        } else if (criteria.getKey().equalsIgnoreCase("conversation")) {
+            Join<T, Conversation> join = root.join("conversation", JoinType.INNER);
+            return buildJoinConversationPredicate(join, query, criteriaBuilder);
         }
         return buildNormalPredicate(root, query, criteriaBuilder);
     }
@@ -37,5 +41,9 @@ public class GenericSpecification<T extends SupportsSpecification> implements Sp
 
     private Predicate buildJoinUserPredicate(Join<T, ?> join, CriteriaQuery<?> query, CriteriaBuilder builder) {
         return builder.equal(builder.lower(join.get("email")), criteria.getValue().toString().toLowerCase());
+    }
+
+    private Predicate buildJoinConversationPredicate(Join<T, ?> join, CriteriaQuery<?> query, CriteriaBuilder builder) {
+        return builder.equal(join.get("id"), criteria.getValue());
     }
 }
