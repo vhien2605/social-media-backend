@@ -1,6 +1,7 @@
 package com.hien.back_end_app.entities;
 
 
+import com.hien.back_end_app.repositories.specification.SupportsSpecification;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -13,7 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Message extends AbstractEntity {
+public class Message extends AbstractEntity implements SupportsSpecification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -30,7 +31,4 @@ public class Message extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
-    
-    @OneToOne(mappedBy = "message", fetch = FetchType.LAZY)
-    private MessageMedia messageMedia;
 }

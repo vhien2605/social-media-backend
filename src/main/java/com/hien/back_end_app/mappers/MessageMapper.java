@@ -10,6 +10,5 @@ import org.mapstruct.Mapping;
 public interface MessageMapper {
     @Mapping(target = "sourceId", source = "sourceUser.id")
     @Mapping(target = "conversationId", source = "conversation.id")
-    @Mapping(target = "messageMedia", source = "messageMedia")
     MessageResponseDTO toDTO(Message message);
 }
