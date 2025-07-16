@@ -4,6 +4,7 @@ import com.hien.back_end_app.repositories.specification.SupportsSpecification;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Date;
 import java.util.Set;
 
 
@@ -29,6 +30,9 @@ public class Conversation extends AbstractEntity implements SupportsSpecificatio
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User user;
+
+    @Column(name = "latest_message_time")
+    private Date latestMessageTime;
 
     @ManyToMany
     @JoinTable(name = "participant_conversation", joinColumns = @JoinColumn(name = "conversation_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))

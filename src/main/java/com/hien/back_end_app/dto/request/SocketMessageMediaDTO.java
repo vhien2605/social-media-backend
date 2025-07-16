@@ -18,3 +18,5 @@ public class SocketMessageMediaDTO implements Serializable {
     private String type;
     private String base64Data;
 }
+
+

@@ -6,6 +6,7 @@ import com.hien.back_end_app.dto.response.socket.MessageResponseDTO;
 import com.hien.back_end_app.dto.response.socket.NotificationResponseDTO;
 import com.hien.back_end_app.entities.*;
 import com.hien.back_end_app.exceptions.AppException;
+import com.hien.back_end_app.mappers.MediaMessageMapper;
 import com.hien.back_end_app.mappers.MessageMapper;
 import com.hien.back_end_app.mappers.NotificationMapper;
 import com.hien.back_end_app.repositories.*;
@@ -19,10 +20,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +35,7 @@ public class SocketConversationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
     private final MessageMapper messageMapper;
+    private final MediaMessageMapper mediaMessageMapper;
 
     @Transactional
     public void sendMessage(SocketMessageDTO request, Long conversationId, SimpMessageHeaderAccessor accessor) {
@@ -46,6 +45,9 @@ public class SocketConversationService {
         // check conversation
         Conversation conversation = conversationRepository.findById(conversationId).
                 orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        conversation.setLatestMessageTime(new Date());
+        conversationRepository.save(conversation);
+
         // check user have that conversation?
         String email = accessor.getUser().getName();
         User createdUser = userRepository.findByEmail(email)
@@ -54,16 +56,13 @@ public class SocketConversationService {
             throw new AppException(ErrorCode.USER_NOT_HAVE_CONVERSATION);
         }
 
-
         if (request.getSocketMessageMediaDTO() == null) {
             Message message = Message.builder()
                     .content(request.getContent())
                     .sourceUser(createdUser)
                     .conversation(conversation)
-                    .messageMedia(null)
                     .build();
             messageRepository.save(message);
-
             //send message
             MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
             simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
@@ -81,14 +80,14 @@ public class SocketConversationService {
                     .content(request.getContent())
                     .sourceUser(createdUser)
                     .conversation(conversation)
-                    .messageMedia(messageMedia)
                     .build();
             messageMedia.setMessage(message);
             messageRepository.save(message);
             messageMediaRepository.save(messageMedia);
 
-            //send message
+            //send message and it's media
             MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+            messageResponseDTO.setMessageMedia(mediaMessageMapper.toDTO(messageMedia));
             simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
         }
 
@@ -116,6 +115,9 @@ public class SocketConversationService {
         Set<Long> userIds = dto.getIds();
         Conversation conversation = conversationRepository.findByIdWithUserCreatedAndParticipants(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        conversation.setLatestMessageTime(new Date());
+        conversationRepository.save(conversation);
+
         if (!conversation.getUser().getEmail().equals(email)) {
             throw new AppException(ErrorCode.ACCESS_DENIED);
         }
@@ -143,7 +145,6 @@ public class SocketConversationService {
         }
 
         Message message = Message.builder()
-                .messageMedia(null)
                 .content(conversation.getUser().getFullName() + " just added new members: " + newUsersContent + " to the conversation")
                 .sourceUser(conversation.getUser())
                 .conversation(conversation)
@@ -159,6 +160,10 @@ public class SocketConversationService {
         String email = accessor.getUser().getName();
         Conversation conversation = conversationRepository.findByIdWithUserCreatedAndParticipants(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        conversation.setLatestMessageTime(new Date());
+        conversationRepository.save(conversation);
+
+
         User createdUser = conversation.getUser();
         if (!createdUser.getEmail().equals(email)) {
             log.error("---------------access denied------------------");
@@ -186,7 +191,6 @@ public class SocketConversationService {
             newUsersContent.append(u).append(" ");
         }
         Message message = Message.builder()
-                .messageMedia(null)
                 .content(conversation.getUser().getFullName() + " just deleted members: " + newUsersContent + " from the conversation")
                 .sourceUser(conversation.getUser())
                 .conversation(conversation)
@@ -211,6 +215,7 @@ public class SocketConversationService {
                 .name(name)
                 .user(createdUser)
                 .isGroup(false)
+                .latestMessageTime(new Date())
                 .participants(new HashSet<>(participants))
                 .build();
 
@@ -245,6 +250,8 @@ public class SocketConversationService {
     public void changeToGroup(Long conversationId, SimpMessageHeaderAccessor accessor) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        conversation.setLatestMessageTime(new Date());
+
         User createdUser = conversation.getUser();
         String email = accessor.getUser().getName();
         if (!createdUser.getEmail().equals(email)) {
@@ -267,6 +274,9 @@ public class SocketConversationService {
     public void changeConversationName(Long conversationId, ChangeConversationNameRequestDTO dto, SimpMessageHeaderAccessor accessor) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        conversation.setLatestMessageTime(new Date());
+
+
         User createdUser = conversation.getUser();
         String email = accessor.getUser().getName();
         if (!createdUser.getEmail().equals(email)) {
