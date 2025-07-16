@@ -1,10 +1,7 @@
 package com.hien.back_end_app.services;
 
 
-import com.hien.back_end_app.dto.request.CreateConversationRequestDTO;
-import com.hien.back_end_app.dto.request.SocketAddMemberRequestDTO;
-import com.hien.back_end_app.dto.request.SocketDeleteMemberRequestDTO;
-import com.hien.back_end_app.dto.request.SocketMessageDTO;
+import com.hien.back_end_app.dto.request.*;
 import com.hien.back_end_app.dto.response.socket.MessageResponseDTO;
 import com.hien.back_end_app.dto.response.socket.NotificationResponseDTO;
 import com.hien.back_end_app.entities.*;
@@ -255,12 +252,35 @@ public class SocketConversationService {
         }
         conversation.setGroup(true);
         conversationRepository.save(conversation);
-        
+
         //save and send message to conversation
         Message message = Message.builder()
                 .conversation(conversation)
                 .sourceUser(createdUser)
                 .content(createdUser.getFullName() + " just change conversation to group chat")
+                .build();
+        messageRepository.save(message);
+        MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversation.getId(), messageResponseDTO);
+    }
+
+    public void changeConversationName(Long conversationId, ChangeConversationNameRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        User createdUser = conversation.getUser();
+        String email = accessor.getUser().getName();
+        if (!createdUser.getEmail().equals(email)) {
+            throw new AppException(ErrorCode.ACCESS_DENIED);
+        }
+        String newName = dto.getName();
+        conversation.setName(newName);
+
+        conversationRepository.save(conversation);
+
+        Message message = Message.builder()
+                .conversation(conversation)
+                .sourceUser(createdUser)
+                .content(createdUser.getFullName() + " just change conversation name to " + newName)
                 .build();
         messageRepository.save(message);
         MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);

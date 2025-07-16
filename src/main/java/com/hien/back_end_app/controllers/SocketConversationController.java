@@ -1,9 +1,6 @@
 package com.hien.back_end_app.controllers;
 
-import com.hien.back_end_app.dto.request.CreateConversationRequestDTO;
-import com.hien.back_end_app.dto.request.SocketAddMemberRequestDTO;
-import com.hien.back_end_app.dto.request.SocketDeleteMemberRequestDTO;
-import com.hien.back_end_app.dto.request.SocketMessageDTO;
+import com.hien.back_end_app.dto.request.*;
 import com.hien.back_end_app.services.SocketConversationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +39,10 @@ public class SocketConversationController {
     @MessageMapping("/message/delete-member/{conversationId}")
     public void deleteMemberFromConversation(@DestinationVariable Long conversationId, @Valid SocketDeleteMemberRequestDTO dto, SimpMessageHeaderAccessor accessor) {
         webSocketService.deleteMemberFromConversation(dto, conversationId, accessor);
+    }
+
+    @MessageMapping("/message/conversation/{conversationId}/change-name")
+    public void changeConversationName(@DestinationVariable Long conversationId, @Valid ChangeConversationNameRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        webSocketService.changeConversationName(conversationId, dto, accessor);
     }
 }
