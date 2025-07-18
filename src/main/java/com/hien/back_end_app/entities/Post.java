@@ -32,4 +32,7 @@ public class Post extends AbstractEntity {
 
     @OneToMany(mappedBy = "post")
     private Set<PostMedia> postMedias;
+
+    @OneToMany(mappedBy = "post")
+    private Set<Emotion> emotions;
 }

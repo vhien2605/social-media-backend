@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.Set;
+
 @Entity
 @Setter
 @Getter
@@ -32,4 +34,7 @@ public class Comment extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reply_to_id")
     private Comment replyTo;
+    
+    @OneToMany(mappedBy = "comment")
+    private Set<Emotion> emotions;
 }

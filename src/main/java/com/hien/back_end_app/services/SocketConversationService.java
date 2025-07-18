@@ -2,8 +2,8 @@ package com.hien.back_end_app.services;
 
 
 import com.hien.back_end_app.dto.request.*;
-import com.hien.back_end_app.dto.response.socket.MessageResponseDTO;
-import com.hien.back_end_app.dto.response.socket.NotificationResponseDTO;
+import com.hien.back_end_app.dto.response.message.MessageResponseDTO;
+import com.hien.back_end_app.dto.response.message.NotificationResponseDTO;
 import com.hien.back_end_app.entities.*;
 import com.hien.back_end_app.exceptions.AppException;
 import com.hien.back_end_app.mappers.MediaMessageMapper;
@@ -68,7 +68,8 @@ public class SocketConversationService {
             simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
         } else {
             //upload file to the cloud and get back url
-            MultipartFile file = fileService.convertToMultipartFile(request.getSocketMessageMediaDTO());
+            SocketMessageMediaDTO dto = request.getSocketMessageMediaDTO();
+            MultipartFile file = fileService.convertToMultipartFile(dto.getName(), dto.getType(), dto.getBase64Data());
             String fileUrl = fileService.uploadFile(file,
                     request.getSocketMessageMediaDTO().getType(), "message_media");
 

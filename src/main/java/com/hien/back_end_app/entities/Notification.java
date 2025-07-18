@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import javax.naming.Name;
+
 @Entity
 @Table(name = "notification")
 @Setter
@@ -44,4 +46,8 @@ public class Notification extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")
     private Conversation conversation;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "emotion_id")
+    private Emotion emotion;
 }

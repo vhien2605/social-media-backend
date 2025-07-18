@@ -1,4 +1,4 @@
-package com.hien.back_end_app.dto.response.socket;
+package com.hien.back_end_app.dto.response.post;
 
 
 import lombok.Builder;
@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @Getter
 @Builder
-public class MediaResponseDTO {
+public class PostMediaResponseDTO {
     private String fileUrl;
 }

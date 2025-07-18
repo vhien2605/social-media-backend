@@ -1,4 +1,4 @@
-package com.hien.back_end_app.dto.response.socket;
+package com.hien.back_end_app.dto.response.message;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hien.back_end_app.utils.enums.NotificationType;
