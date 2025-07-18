@@ -12,6 +12,10 @@ public enum NotificationType {
     COMMENT_REPLY,
     @JsonProperty("post")
     POST,
+    @JsonProperty("follow")
+    FOLLOW,
+    @JsonProperty("emotion")
+    EMOTION,
     UNKNOWN;
 
     @JsonCreator

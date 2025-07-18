@@ -1,6 +1,6 @@
 package com.hien.back_end_app.mappers;
 
-import com.hien.back_end_app.dto.response.socket.NotificationResponseDTO;
+import com.hien.back_end_app.dto.response.message.NotificationResponseDTO;
 import com.hien.back_end_app.entities.Notification;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

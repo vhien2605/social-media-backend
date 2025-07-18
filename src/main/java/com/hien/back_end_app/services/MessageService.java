@@ -2,9 +2,7 @@ package com.hien.back_end_app.services;
 
 
 import com.hien.back_end_app.dto.response.PageResponseDTO;
-import com.hien.back_end_app.dto.response.conversation.ConversationResponseDTO;
-import com.hien.back_end_app.dto.response.socket.MessageResponseDTO;
-import com.hien.back_end_app.entities.Conversation;
+import com.hien.back_end_app.dto.response.message.MessageResponseDTO;
 import com.hien.back_end_app.entities.Message;
 import com.hien.back_end_app.entities.MessageMedia;
 import com.hien.back_end_app.mappers.MediaMessageMapper;
@@ -119,7 +117,7 @@ public class MessageService {
                 .peek(dto -> dto.setMessageMedia(
                         mediaMessageMapper.toDTO(idMessageMediaMap.get(dto.getId()))))
                 .toList();
-        
+
         return PageResponseDTO.builder()
                 .pageNo(pageable.getPageNumber())
                 .pageSize(pageable.getPageSize())

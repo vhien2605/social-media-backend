@@ -1,6 +1,6 @@
 package com.hien.back_end_app.mappers;
 
-import com.hien.back_end_app.dto.response.socket.MediaResponseDTO;
+import com.hien.back_end_app.dto.response.message.MediaResponseDTO;
 import com.hien.back_end_app.entities.MessageMedia;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
