@@ -59,6 +59,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.setUserDestinationPrefix("/users");
     }
 
+
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
