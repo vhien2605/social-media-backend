@@ -20,6 +20,13 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     })
     public Optional<User> findByEmail(String email);
 
+
+    @Query("""
+            SELECT u FROM User u
+            WHERE u.email=:email
+            """)
+    public Optional<User> findByEmailWithNoReferences(@Param("email") String email);
+
     @EntityGraph(attributePaths = {
             "roles",
             "roles.permissions"
