@@ -27,7 +27,8 @@ public enum ErrorCode {
     CONVERSATION_NOT_EXIST(400, "conversation is not exist", HttpStatus.BAD_REQUEST),
     UPLOAD_FILE_FAILED(503, "service unavailable", HttpStatus.SERVICE_UNAVAILABLE),
     CONVERSATION_SIZE_INVALID(400, "conversation size invalid", HttpStatus.BAD_REQUEST),
-    ;
+    POST_NOT_EXIST(400, "can't find any post with given id, please try other ids", HttpStatus.BAD_REQUEST),
+    COMMENT_NOT_EXIST(400, "this comment is not existed anymore", HttpStatus.BAD_REQUEST);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

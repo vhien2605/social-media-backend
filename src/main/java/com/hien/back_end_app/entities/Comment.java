@@ -1,5 +1,7 @@
 package com.hien.back_end_app.entities;
 
+import com.hien.back_end_app.utils.anotations.EnumPattern;
+import com.hien.back_end_app.utils.enums.CommentType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -27,6 +29,12 @@ public class Comment extends AbstractEntity {
     @JoinColumn(name = "user_id")
     private User createdBy;
 
+
+    @Column(name = "type")
+    @Enumerated(EnumType.STRING)
+    @EnumPattern(name = "comment_type", regexp = "POST_COMMENT|REPLY_COMMENT")
+    private CommentType type;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
@@ -34,7 +42,7 @@ public class Comment extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reply_to_id")
     private Comment replyTo;
-    
+
     @OneToMany(mappedBy = "comment")
     private Set<Emotion> emotions;
 }
