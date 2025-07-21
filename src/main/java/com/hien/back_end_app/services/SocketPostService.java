@@ -1,6 +1,7 @@
 package com.hien.back_end_app.services;
 
 
+import com.hien.back_end_app.dto.request.CreateCommentRequestDTO;
 import com.hien.back_end_app.dto.request.CreatePostRequestDTO;
 import com.hien.back_end_app.dto.request.PostMediaRequestDTO;
 import com.hien.back_end_app.dto.response.message.NotificationResponseDTO;
@@ -9,6 +10,7 @@ import com.hien.back_end_app.exceptions.AppException;
 import com.hien.back_end_app.mappers.NotificationMapper;
 import com.hien.back_end_app.mappers.PostMapper;
 import com.hien.back_end_app.repositories.*;
+import com.hien.back_end_app.utils.enums.CommentType;
 import com.hien.back_end_app.utils.enums.ErrorCode;
 import com.hien.back_end_app.utils.enums.NotificationType;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +33,7 @@ public class SocketPostService {
     private final FileService fileService;
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
-
+    private final CommentRepository commentRepository;
 
     @Transactional
     public void createPostSocket(CreatePostRequestDTO dto, SimpMessageHeaderAccessor accessor) {
@@ -85,6 +87,85 @@ public class SocketPostService {
         // send notification that post created
         for (User followUser : followUsers) {
             simpMessagingTemplate.convertAndSendToUser(followUser.getEmail(), "/queue/notifications", notificationResponseDTO);
+        }
+    }
+
+
+    /**
+     * Create comment to post method
+     *
+     * @param postId   post's id that user comment to
+     * @param dto      comment properties
+     * @param accessor socket header
+     */
+    public void commentTo(Long postId, CreateCommentRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_EXIST));
+
+        String createdEmail = accessor.getUser().getName();
+        User createdUser = userRepository.findByEmailWithNoReferences(createdEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        String commentContent = dto.getContent();
+        Comment comment = Comment.builder()
+                .content(commentContent)
+                .createdBy(createdUser)
+                .post(post)
+                .replyTo(null)
+                .type(CommentType.POST_COMMENT)
+                .build();
+        commentRepository.save(comment);
+
+        //create and send notification to user has the post
+        User postCreatedUser = post.getCreatedBy();
+        Notification notification = Notification.builder()
+                .createdBy(createdUser)
+                .comment(comment)
+                .post(post)
+                .type(NotificationType.COMMENT_POST)
+                .content(createdUser.getFullName() + " just commented to your post. Let's reply them")
+                .build();
+        notificationRepository.save(notification);
+
+        NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+        // send alert to userPost
+        simpMessagingTemplate.convertAndSendToUser(postCreatedUser.getEmail(), "/queue/notifications", notificationResponseDTO);
+    }
+
+    public void replyTo(Long commentId, CreateCommentRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        String createdEmail = accessor.getUser().getName();
+        User createdUser = userRepository.findByEmailWithNoReferences(createdEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        Comment targetComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
+        Post targetPost = targetComment.getPost();
+        User targetCommentUser = targetComment.getCreatedBy();
+
+        Comment replyComment = Comment.builder()
+                .content(dto.getContent())
+                .createdBy(createdUser)
+                .replyTo(targetComment)
+                .post(targetPost)
+                .type(CommentType.REPLY_COMMENT)
+                .build();
+        commentRepository.save(replyComment);
+
+
+        //create and send notifications
+        // if I reply to myself, not send notification
+        if (targetCommentUser.getId() != createdUser.getId()) {
+            Notification notification = Notification.builder()
+                    .type(NotificationType.COMMENT_REPLY)
+                    .content(createdUser.getFullName() + " just replied to your comment,Let's check it out")
+                    .createdBy(createdUser)
+                    .comment(replyComment)
+                    .post(targetPost)
+                    .build();
+            notificationRepository.save(notification);
+
+            NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+            simpMessagingTemplate.convertAndSendToUser(targetCommentUser.getEmail(), "/queue/notifications", notificationResponseDTO);
         }
     }
 }
