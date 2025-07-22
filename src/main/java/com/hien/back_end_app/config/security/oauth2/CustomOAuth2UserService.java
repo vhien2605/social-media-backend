@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +45,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2UserInfo userInfo = OAuth2UserInfo.getOAuth2UserInfo(userRequest.getClientRegistration().getRegistrationId(),
                 oAuth2User.getAttributes());
         if (userInfo == null || StringUtils.isEmpty(userInfo.getEmail())) {
-            throw new AppException(ErrorCode.OAuth2CheckingException);
+            ErrorCode errorCode = ErrorCode.OAuth2CheckingException;
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error(String.valueOf(errorCode.getCode()), errorCode.name(), null)
+                    , errorCode.getMessage());
         }
         Optional<User> userOptional = userRepository.findByEmail(userInfo.getEmail());
         User user;
@@ -53,7 +57,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             // from the third-account
             user = userOptional.get();
             if (!user.getAuthProvider().name().equalsIgnoreCase(userRequest.getClientRegistration().getRegistrationId())) {
-                throw new AppException(ErrorCode.OAuth2InvalidProvider);
+                ErrorCode errorCode = ErrorCode.OAuth2InvalidProvider;
+                throw new OAuth2AuthenticationException(
+                        new OAuth2Error(String.valueOf(errorCode.getCode()), errorCode.name(), null)
+                        , errorCode.getMessage());
             }
             // update existed user
             user = updateExistingUser(user, userInfo);
@@ -70,6 +77,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private User updateExistingUser(User user, OAuth2UserInfo userInfo) {
         user.setFullName(userInfo.getName());
         user.setImageUrl(userInfo.getImageUrl());
+        user.setProviderId(userInfo.getId());
         userRepository.save(user);
         return user;
     }
@@ -82,9 +90,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         user.setEmail(userInfo.getEmail());
         user.setImageUrl(userInfo.getImageUrl());
         user.setUserStatus(UserStatus.ONLINE);
-
         Role role = roleRepository.findByName("USER")
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_EXIST));
+                .orElseThrow(() -> {
+                    ErrorCode errorCode = ErrorCode.ROLE_NOT_EXIST;
+                    return new OAuth2AuthenticationException(
+                            new OAuth2Error(String.valueOf(errorCode.getCode()), errorCode.name(), null)
+                            , errorCode.getMessage());
+                });
         user.setRoles(Set.of(role));
         return userRepository.save(user);
     }
