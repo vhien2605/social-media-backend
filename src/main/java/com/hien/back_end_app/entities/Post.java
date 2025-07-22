@@ -1,6 +1,7 @@
 package com.hien.back_end_app.entities;
 
 
+import com.hien.back_end_app.repositories.specification.SupportsSpecification;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -14,7 +15,7 @@ import java.util.Set;
 @Builder
 @Setter
 @Getter
-public class Post extends AbstractEntity {
+public class Post extends AbstractEntity implements SupportsSpecification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

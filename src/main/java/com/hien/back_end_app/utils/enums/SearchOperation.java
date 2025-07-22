@@ -1,7 +1,7 @@
 package com.hien.back_end_app.utils.enums;
 
 public enum SearchOperation {
-    EQUALITY, NEGATION, GREATER_THAN, LESS_THAN, LIKE, STARTS_WITH, ENDS_WITH, CONTAINS;
+    EQUALITY, NEGATION, GREATER_THAN, LESS_THAN, LIKE, STARTS_WITH, ENDS_WITH, CONTAINS, IN;
 
     public static final String[] SIMPLE_OPERATION_SET = {":", "!", ">", "<", "~"};
     public static final String OR_PREDICATE_FLAG = "'";
@@ -18,6 +18,7 @@ public enum SearchOperation {
             case '>' -> GREATER_THAN;
             case '<' -> LESS_THAN;
             case '~' -> LIKE;
+            case '^' -> IN;
             default -> null;
         };
     }

@@ -34,5 +34,8 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType("application/json");
         ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(tokenResponse));
+
+        // in the future, if send redirect to front-end domain
+        // add one step more to check redirect_uri authorized
     }
 }
