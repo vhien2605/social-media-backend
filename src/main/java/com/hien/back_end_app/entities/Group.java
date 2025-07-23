@@ -4,7 +4,6 @@ package com.hien.back_end_app.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.hibernate.tool.schema.spi.SchemaTruncator;
 
 import java.util.Set;
 
