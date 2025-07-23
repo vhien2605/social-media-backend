@@ -28,7 +28,6 @@ public class PostController {
                 .build();
     }
 
-
     @GetMapping("/follow-posts/advanced-filter")
     public ApiResponse getPostFilter(Pageable pageable
             , @RequestParam(required = false) String[] post
@@ -57,6 +56,26 @@ public class PostController {
                 .status(200)
                 .message("get my posts with advanced filter")
                 .data(postService.getMyPostsWithAdvancedFilter(pageable, post, sortBy))
+                .build();
+    }
+
+
+    // phan quyen voi group
+    @GetMapping("/post-comments/{postId}")
+    public ApiResponse getCommentFromPost() {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get post comments")
+                .data(null)
+                .build();
+    }
+
+    @GetMapping("/reply-comments/{commentId}")
+    public ApiResponse getReplyComment() {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get reply comments")
+                .data(null)
                 .build();
     }
 }
