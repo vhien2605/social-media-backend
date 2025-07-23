@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
     private final PostService postService;
 
+    // wall post hay group post deu coi duoc
     @GetMapping("/follow-posts")
     public ApiResponse getPost(Pageable pageable) {
         return ApiSuccessResponse.builder()
@@ -59,8 +60,7 @@ public class PostController {
                 .build();
     }
 
-
-    // phan quyen voi group
+    // neu la group_post-> phai o trong group moi duoc coi
     @GetMapping("/post-comments/{postId}")
     public ApiResponse getCommentFromPost() {
         return ApiSuccessResponse.builder()
