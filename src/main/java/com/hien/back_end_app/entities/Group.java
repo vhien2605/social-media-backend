@@ -34,4 +34,8 @@ public class Group {
 
     @OneToMany(mappedBy = "group")
     private Set<GroupUser> groupUsers;
+
+
+    @OneToMany(mappedBy = "group")
+    private Set<Post> posts;
 }

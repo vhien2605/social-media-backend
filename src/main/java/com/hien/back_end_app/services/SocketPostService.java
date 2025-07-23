@@ -13,6 +13,7 @@ import com.hien.back_end_app.repositories.*;
 import com.hien.back_end_app.utils.enums.CommentType;
 import com.hien.back_end_app.utils.enums.ErrorCode;
 import com.hien.back_end_app.utils.enums.NotificationType;
+import com.hien.back_end_app.utils.enums.PostType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -42,6 +43,7 @@ public class SocketPostService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         Post post = postMapper.toEntity(dto);
         post.setCreatedBy(user);
+        post.setType(PostType.WALL_POST);
 
         if (dto.getPostMedias().isEmpty()) {
             postRepository.save(post);
@@ -168,4 +170,7 @@ public class SocketPostService {
             simpMessagingTemplate.convertAndSendToUser(targetCommentUser.getEmail(), "/queue/notifications", notificationResponseDTO);
         }
     }
+    // create group post-> create request and split other route because need group_id
+    // comment to group post-> check role because it does need group_id
+    // reply to group comment-> check role --------------------------
 }

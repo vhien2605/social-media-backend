@@ -31,7 +31,7 @@ public class UploadPostRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    @EnumPattern(name = "request_status", regexp = "PENDING|ACCEPTED||REJECTED")
+    @EnumPattern(name = "request_status", regexp = "PENDING|ACCEPTED|REJECTED")
     private RequestStatus status;
 
     @Column(name = "content")

@@ -27,6 +27,7 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             SELECT p FROM Post p
             INNER JOIN p.createdBy pc
             WHERE pc.id IN :targetIds
+            WHERE p.
             ORDER BY p.createAt DESC
             """)
     Page<Post> findFollowPosts(@Param("targetIds") List<Long> ids, Pageable pageable);
