@@ -11,6 +11,8 @@ public interface NotificationMapper {
     @Mapping(target = "postId", source = "post.id")
     @Mapping(target = "commentId", source = "comment.id")
     @Mapping(target = "conversationId", source = "conversation.id")
+    @Mapping(target = "emotionId", source = "emotion.id")
+    @Mapping(target = "groupId", source = "group.id")
     @Mapping(target = "updateAt", source = "updateAt")
     @Mapping(target = "createAt", source = "createAt")
     NotificationResponseDTO toDTO(Notification notification);

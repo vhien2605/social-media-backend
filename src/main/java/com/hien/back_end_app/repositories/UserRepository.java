@@ -39,4 +39,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Transactional
     @Query("UPDATE User u SET u.userStatus=:status WHERE u.email=:email")
     public void updateOnlineByEmail(@Param("email") String email, @Param("status") UserStatus status);
+
+
+    @Override
+    Optional<User> findById(Long aLong);
 }
