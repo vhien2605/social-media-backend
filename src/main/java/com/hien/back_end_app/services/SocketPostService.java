@@ -2,6 +2,7 @@ package com.hien.back_end_app.services;
 
 
 import com.hien.back_end_app.dto.request.CreateCommentRequestDTO;
+import com.hien.back_end_app.dto.request.CreateGroupPostRequestDTO;
 import com.hien.back_end_app.dto.request.CreatePostRequestDTO;
 import com.hien.back_end_app.dto.request.PostMediaRequestDTO;
 import com.hien.back_end_app.dto.response.message.NotificationResponseDTO;
@@ -173,4 +174,10 @@ public class SocketPostService {
     // create group post-> create request and split other route because need group_id
     // comment to group post-> check role because it does need group_id
     // reply to group comment-> check role --------------------------
+
+    public void createGroupPostSocket(CreateGroupPostRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        String createdEmail = accessor.getUser().getName();
+        long groupId = dto.getGroupId();
+        
+    }
 }

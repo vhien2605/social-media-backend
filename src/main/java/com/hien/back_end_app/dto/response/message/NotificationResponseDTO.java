@@ -27,6 +27,12 @@ public class NotificationResponseDTO implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private long conversationId;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private long emotionId;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private long groupId;
+
     private Date createAt;
     private Date updateAt;
 }

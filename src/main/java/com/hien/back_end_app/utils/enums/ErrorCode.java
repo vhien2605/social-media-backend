@@ -28,7 +28,10 @@ public enum ErrorCode {
     UPLOAD_FILE_FAILED(503, "service unavailable", HttpStatus.SERVICE_UNAVAILABLE),
     CONVERSATION_SIZE_INVALID(400, "conversation size invalid", HttpStatus.BAD_REQUEST),
     POST_NOT_EXIST(400, "can't find any post with given id, please try other ids", HttpStatus.BAD_REQUEST),
-    COMMENT_NOT_EXIST(400, "this comment is not existed anymore", HttpStatus.BAD_REQUEST);
+    COMMENT_NOT_EXIST(400, "this comment is not existed anymore", HttpStatus.BAD_REQUEST),
+    GROUP_NOT_EXIST(400, "group is not exist", HttpStatus.BAD_REQUEST),
+    REQUEST_NOT_EXIST(400, "request not exist", HttpStatus.BAD_REQUEST),
+    USER_ALREADY_IN_GROUP(409, "user is already in group", HttpStatus.CONFLICT);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

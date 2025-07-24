@@ -2,6 +2,7 @@ package com.hien.back_end_app.controllers;
 
 
 import com.hien.back_end_app.dto.request.CreateCommentRequestDTO;
+import com.hien.back_end_app.dto.request.CreateGroupPostRequestDTO;
 import com.hien.back_end_app.dto.request.CreatePostRequestDTO;
 import com.hien.back_end_app.services.SocketPostService;
 import jakarta.validation.Valid;
@@ -22,6 +23,11 @@ public class SocketPostController {
     @MessageMapping("/post/create-post")
     public void createPost(@Valid CreatePostRequestDTO dto, SimpMessageHeaderAccessor accessor) {
         socketPostService.createPostSocket(dto, accessor);
+    }
+
+    @MessageMapping("/post/create-group-post")
+    public void createGroupPost(@Valid CreateGroupPostRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        socketPostService.createGroupPostSocket(dto, accessor);
     }
 
     @MessageMapping("/post/comment-to/{postId}")
