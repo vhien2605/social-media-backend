@@ -103,10 +103,17 @@ public class SocketPostService {
     public void commentTo(Long postId, CreateCommentRequestDTO dto, SimpMessageHeaderAccessor accessor) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_EXIST));
-
         String createdEmail = accessor.getUser().getName();
         User createdUser = userRepository.findByEmailWithNoReferences(createdEmail)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (post.getType().equals(PostType.GROUP_POST)) {
+            // check if this post is group_post -> user must in group to comment
+            Optional<GroupUser> groupUser = groupUserRepository.findByGroupIdAndUserId(post.getGroup().getId(), createdUser.getId());
+            if (groupUser.isEmpty()) {
+                throw new AppException(ErrorCode.ACCESS_DENIED);
+            }
+        }
 
         String commentContent = dto.getContent();
         Comment comment = Comment.builder()
@@ -119,20 +126,23 @@ public class SocketPostService {
         commentRepository.save(comment);
 
         //create and send notification to user has the post
+
         User postCreatedUser = post.getCreatedBy();
-        Notification notification = Notification.builder()
-                .createdBy(createdUser)
-                .comment(comment)
-                .post(post)
-                .type(NotificationType.COMMENT_POST)
-                .content(createdUser.getFullName() + " just commented to your post. Let's reply them")
-                .build();
-        notificationRepository.save(notification);
+        if (postCreatedUser.getId() != createdUser.getId()) {
+            Notification notification = Notification.builder()
+                    .createdBy(createdUser)
+                    .comment(comment)
+                    .post(post)
+                    .type(NotificationType.COMMENT_POST)
+                    .content(createdUser.getFullName() + " just commented to your post. Let's reply them")
+                    .build();
+            notificationRepository.save(notification);
 
-        NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+            NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
 
-        // send alert to userPost
-        simpMessagingTemplate.convertAndSendToUser(postCreatedUser.getEmail(), "/queue/notifications", notificationResponseDTO);
+            // send alert to userPost
+            simpMessagingTemplate.convertAndSendToUser(postCreatedUser.getEmail(), "/queue/notifications", notificationResponseDTO);
+        }
     }
 
     public void replyTo(Long commentId, CreateCommentRequestDTO dto, SimpMessageHeaderAccessor accessor) {
@@ -142,6 +152,15 @@ public class SocketPostService {
         Comment targetComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
         Post targetPost = targetComment.getPost();
+
+        if (targetPost.getType().equals(PostType.GROUP_POST)) {
+            // is group post, user must be in group to reply comment
+            Group group = targetComment.getPost().getGroup();
+            var groupUser = groupUserRepository.findByGroupIdAndUserId(group.getId(), createdUser.getId());
+            if (groupUser.isEmpty()) {
+                throw new AppException(ErrorCode.ACCESS_DENIED);
+            }
+        }
         User targetCommentUser = targetComment.getCreatedBy();
 
         Comment replyComment = Comment.builder()
