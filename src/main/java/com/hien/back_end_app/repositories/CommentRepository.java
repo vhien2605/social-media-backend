@@ -13,7 +13,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     @EntityGraph(attributePaths = {
             "post",
-            "createdBy"
+            "createdBy",
+            "post.group"
     })
     @Override
     Optional<Comment> findById(Long commentId);
