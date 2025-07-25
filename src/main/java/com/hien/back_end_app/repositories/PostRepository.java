@@ -1,6 +1,7 @@
 package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.Post;
+import com.hien.back_end_app.utils.enums.PostType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -27,9 +28,10 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             SELECT p FROM Post p
             INNER JOIN p.createdBy pc
             WHERE pc.id IN :targetIds
+            AND p.type=:type
             ORDER BY p.createAt DESC
             """)
-    Page<Post> findFollowPosts(@Param("targetIds") List<Long> ids, Pageable pageable);
+    Page<Post> findFollowPosts(@Param("targetIds") List<Long> ids, @Param("type") PostType type, Pageable pageable);
 
 
     @Query("""
@@ -42,13 +44,14 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
 
     @Override
-    Page<Post> findAll(Specification<Post> spec, Pageable pageable);
+    public Page<Post> findAll(Specification<Post> spec, Pageable pageable);
 
     @Query("""
             SELECT p FROM Post p
             INNER JOIN p.createdBy pc
             WHERE pc.email=:email
+            AND p.type=:type
             ORDER BY p.createAt DESC
             """)
-    public Page<Post> findMyPosts(@Param("email") String email, Pageable pageable);
+    public Page<Post> findMyPosts(@Param("email") String email, @Param("type") PostType type, Pageable pageable);
 }
