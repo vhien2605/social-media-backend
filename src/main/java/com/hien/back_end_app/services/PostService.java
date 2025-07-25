@@ -11,6 +11,7 @@ import com.hien.back_end_app.repositories.PostRepository;
 import com.hien.back_end_app.repositories.specification.SpecificationBuilder;
 import com.hien.back_end_app.utils.commons.AppConst;
 import com.hien.back_end_app.utils.commons.GlobalMethod;
+import com.hien.back_end_app.utils.enums.PostType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,7 +42,7 @@ public class PostService {
         List<Long> targetFollowIds = targetFollows.stream()
                 .map(f -> f.getTargetUser().getId()).toList();
         // find posts of target follows
-        Page<Post> posts = postRepository.findFollowPosts(targetFollowIds, pageable);
+        Page<Post> posts = postRepository.findFollowPosts(targetFollowIds, PostType.WALL_POST, pageable);
         List<Long> postIds = posts.stream()
                 .map(Post::getId).toList();
         // fetch
@@ -76,6 +77,7 @@ public class PostService {
         // loop conversation and build specification
         // add predicate user follow
         builder.with(null, "idCreate", "^", targetFollowIds, null, null);
+        builder.with(null, "type", ":", PostType.WALL_POST, null, null);
         // loop other predicate
         for (String s : post) {
             Matcher matcher = pattern.matcher(s);
@@ -131,7 +133,7 @@ public class PostService {
 
     public PageResponseDTO<Object> getMyPosts(Pageable pageable) {
         String email = GlobalMethod.extractEmailFromContext();
-        Page<Post> posts = postRepository.findMyPosts(email, pageable);
+        Page<Post> posts = postRepository.findMyPosts(email, PostType.WALL_POST, pageable);
         List<Long> postIds = posts.stream()
                 .map(Post::getId)
                 .toList();
@@ -161,6 +163,7 @@ public class PostService {
         // loop conversation and build specification
         // add predicate join equal createdUser mail
         builder.with(null, "createdEmail", "^", email, null, null);
+        builder.with(null, "type", ":", PostType.WALL_POST, null, null);
         // loop other predicate
         for (String s : post) {
             Matcher matcher = pattern.matcher(s);

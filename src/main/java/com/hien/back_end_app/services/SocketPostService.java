@@ -1,20 +1,14 @@
 package com.hien.back_end_app.services;
 
 
-import com.hien.back_end_app.dto.request.CreateCommentRequestDTO;
-import com.hien.back_end_app.dto.request.CreateGroupPostRequestDTO;
-import com.hien.back_end_app.dto.request.CreatePostRequestDTO;
-import com.hien.back_end_app.dto.request.PostMediaRequestDTO;
+import com.hien.back_end_app.dto.request.*;
 import com.hien.back_end_app.dto.response.message.NotificationResponseDTO;
 import com.hien.back_end_app.entities.*;
 import com.hien.back_end_app.exceptions.AppException;
 import com.hien.back_end_app.mappers.NotificationMapper;
 import com.hien.back_end_app.mappers.PostMapper;
 import com.hien.back_end_app.repositories.*;
-import com.hien.back_end_app.utils.enums.CommentType;
-import com.hien.back_end_app.utils.enums.ErrorCode;
-import com.hien.back_end_app.utils.enums.NotificationType;
-import com.hien.back_end_app.utils.enums.PostType;
+import com.hien.back_end_app.utils.enums.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -36,6 +30,11 @@ public class SocketPostService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
     private final CommentRepository commentRepository;
+    private final GroupRepository groupRepository;
+    private final GroupUserRepository groupUserRepository;
+    private final UploadPostRequestRepository uploadPostRequestRepository;
+    private final PostRequestMediaRepository postRequestMediaRepository;
+
 
     @Transactional
     public void createPostSocket(CreatePostRequestDTO dto, SimpMessageHeaderAccessor accessor) {
@@ -46,7 +45,7 @@ public class SocketPostService {
         post.setCreatedBy(user);
         post.setType(PostType.WALL_POST);
 
-        if (dto.getPostMedias().isEmpty()) {
+        if (dto.getPostMedias() == null || dto.getPostMedias().isEmpty()) {
             postRepository.save(post);
         } else {
             Set<PostMediaRequestDTO> postMedias = dto.getPostMedias();
@@ -175,9 +174,114 @@ public class SocketPostService {
     // comment to group post-> check role because it does need group_id
     // reply to group comment-> check role --------------------------
 
+
+    @Transactional
     public void createGroupPostSocket(CreateGroupPostRequestDTO dto, SimpMessageHeaderAccessor accessor) {
         String createdEmail = accessor.getUser().getName();
+        String content = dto.getContent();
         long groupId = dto.getGroupId();
-        
+        Group group = groupRepository.findByIdWithGroupUsers(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_EXIST));
+        Set<GroupUser> groupUsers = group.getGroupUsers();
+        User postUser = userRepository.findByEmailWithNoReferences(createdEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        // check user is member in group
+        boolean isInGroup = groupUsers.stream().anyMatch(gu -> gu.getUser().getId() == postUser.getId());
+        if (!isInGroup) {
+            throw new AppException(ErrorCode.ACCESS_DENIED);
+        }
+        if (group.getCreatedBy().getId() == postUser.getId()) {
+            // if user is creator of group-> can upload directly
+            Post post = Post.builder()
+                    .content(content)
+                    .group(group)
+                    .createdBy(postUser)
+                    .type(PostType.GROUP_POST)
+                    .build();
+            if (dto.getMedias() == null || dto.getMedias().isEmpty()) {
+                postRepository.save(post);
+            } else {
+                Set<GroupPostMediaDTO> postMedias = dto.getMedias();
+                List<String> fileUrls = postMedias.stream()
+                        .map(pm -> fileService.convertToMultipartFile(
+                                pm.getName(),
+                                pm.getType(),
+                                pm.getBase64Data()))
+                        .map(file -> fileService.uploadFile(file
+                                , Objects.requireNonNull(file.getContentType())
+                                , "post_media"))
+                        .toList();
+                Set<PostMedia> postMediaEntities = new HashSet<>();
+                for (String fileUrl : fileUrls) {
+                    PostMedia postMedia = PostMedia.builder()
+                            .fileUrl(fileUrl)
+                            .post(post)
+                            .build();
+                    postMediaEntities.add(postMedia);
+                }
+                post.setPostMedias(postMediaEntities);
+                postRepository.save(post);
+                postMediaRepository.saveAll(new ArrayList<>(postMediaEntities));
+            }
+            // send notifications to all groupUsers
+            Notification notification = Notification.builder()
+                    .type(NotificationType.GROUP_POST)
+                    .createdBy(postUser)
+                    .group(group)
+                    .post(post)
+                    .content(postUser.getFullName() + " released new post in group " + group.getName() + " .Let's check it out")
+                    .build();
+            notificationRepository.save(notification);
+            NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+            List<User> usersInGroup = groupUsers.stream().map(GroupUser::getUser)
+                    .toList();
+            for (User u : usersInGroup) {
+                simpMessagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/notifications", notificationResponseDTO);
+            }
+        } else {
+            // if not,user must create upload request to admin
+            UploadPostRequest uploadPostRequest = UploadPostRequest.builder()
+                    .createdBy(postUser)
+                    .status(RequestStatus.PENDING)
+                    .group(group)
+                    .content(content)
+                    .build();
+            if (dto.getMedias() == null || dto.getMedias().isEmpty()) {
+                uploadPostRequestRepository.save(uploadPostRequest);
+            } else {
+                Set<GroupPostMediaDTO> postMedias = dto.getMedias();
+                List<String> fileUrls = postMedias.stream()
+                        .map(pm -> fileService.convertToMultipartFile(
+                                pm.getName(),
+                                pm.getType(),
+                                pm.getBase64Data()))
+                        .map(file -> fileService.uploadFile(file
+                                , Objects.requireNonNull(file.getContentType())
+                                , "post_media"))
+                        .toList();
+                Set<PostRequestMedia> postMediaEntities = new HashSet<>();
+                for (String fileUrl : fileUrls) {
+                    PostRequestMedia postRequestMedia = PostRequestMedia.builder()
+                            .fileUrl(fileUrl)
+                            .postRequest(uploadPostRequest)
+                            .build();
+                    postMediaEntities.add(postRequestMedia);
+                }
+                uploadPostRequest.setMedias(postMediaEntities);
+                uploadPostRequestRepository.save(uploadPostRequest);
+                postRequestMediaRepository.saveAll(new ArrayList<>(postMediaEntities));
+            }
+
+            // send notification to admin group
+            Notification notification = Notification.builder()
+                    .content(postUser.getFullName() + " created new post request,check it for acceptance or reject")
+                    .type(NotificationType.GROUP_POST)
+                    .createdBy(postUser)
+                    .group(group)
+                    .build();
+            notificationRepository.save(notification);
+            NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+            simpMessagingTemplate.convertAndSendToUser(group.getCreatedBy().getEmail(), "/queue/notifications", notificationResponseDTO);
+        }
     }
 }

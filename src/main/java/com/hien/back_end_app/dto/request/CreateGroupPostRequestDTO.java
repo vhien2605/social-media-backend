@@ -18,5 +18,5 @@ public class CreateGroupPostRequestDTO implements Serializable {
     private long groupId;
     @NotBlank(message = "content must not be blank")
     private String content;
-    Set<GroupPostMediaDTO> medias;
+    private Set<GroupPostMediaDTO> medias;
 }
