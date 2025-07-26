@@ -3,6 +3,7 @@ package com.hien.back_end_app.controllers;
 
 import com.hien.back_end_app.dto.request.AddMemberRequestDTO;
 import com.hien.back_end_app.dto.request.CheckJoinRequestDTO;
+import com.hien.back_end_app.dto.request.CheckPostRequestDTO;
 import com.hien.back_end_app.dto.request.JoinGroupRequestDTO;
 import com.hien.back_end_app.services.SocketGroupService;
 import jakarta.validation.Valid;
@@ -35,5 +36,13 @@ public class SocketGroupController {
             , @Valid CheckJoinRequestDTO dto
             , SimpMessageHeaderAccessor accessor) {
         socketGroupService.checkJoinRequest(joinRequestId, dto, accessor);
+    }
+
+    @MessageMapping("/group/check-post-request/{postRequest}")
+    public void acceptedPostRequest(@DestinationVariable @Min(value = 0, message = "postRequest id must not be negative") Long postRequest
+            , @Valid CheckPostRequestDTO dto
+            , SimpMessageHeaderAccessor accessor
+    ) {
+        socketGroupService.checkPostRequest(postRequest, dto, accessor);
     }
 }
