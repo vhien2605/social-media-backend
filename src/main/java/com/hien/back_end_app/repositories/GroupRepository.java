@@ -1,10 +1,13 @@
 package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.Group;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -25,4 +28,5 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             WHERE g.id=:groupId
             """)
     public Optional<Group> findByIdWithGroupUsers(@Param("groupId") Long groupId);
+    
 }

@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "group_user")
-public class GroupUser {
+public class GroupUser extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

@@ -2,6 +2,8 @@ package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.JoinGroupRequest;
 import com.hien.back_end_app.utils.enums.RequestStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -21,4 +23,13 @@ public interface JoinGroupRequestRepository extends JpaRepository<JoinGroupReque
     })
     @Override
     Optional<JoinGroupRequest> findById(Long aLong);
+
+    @Query("""
+            SELECT j FROM JoinGroupRequest j
+            INNER JOIN j.group g
+            JOIN FETCH j.createdBy
+            WHERE g.id=:id
+            ORDER BY j.createAt DESC
+            """)
+    Page<JoinGroupRequest> findByGroupId(@Param("id") Long groupId, Pageable pageable);
 }

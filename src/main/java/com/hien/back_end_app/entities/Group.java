@@ -14,7 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "social_group")
-public class Group {
+public class Group extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -34,7 +34,7 @@ public class Group {
 
     @OneToMany(mappedBy = "group")
     private Set<GroupUser> groupUsers;
-    
+
     @OneToMany(mappedBy = "group")
     private Set<Post> posts;
 }

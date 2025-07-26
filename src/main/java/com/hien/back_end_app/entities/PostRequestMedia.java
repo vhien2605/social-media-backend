@@ -12,7 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "post_request_media")
-public class PostRequestMedia {
+public class PostRequestMedia extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
