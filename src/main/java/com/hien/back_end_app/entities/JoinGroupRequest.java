@@ -14,7 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "join_group_request")
-public class JoinGroupRequest {
+public class JoinGroupRequest extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

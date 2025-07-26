@@ -55,4 +55,13 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
             ORDER BY p.createAt DESC
             """)
     public Page<Post> findMyPosts(@Param("email") String email, @Param("type") PostType type, Pageable pageable);
+
+
+    @Query("""
+            SELECT p FROM Post p
+            INNER JOIN p.group g
+            WHERE g.id=:groupId
+            ORDER BY p.createAt DESC
+            """)
+    public Page<Post> findGroupPosts(@Param("groupId") Long groupId, Pageable pageable);
 }

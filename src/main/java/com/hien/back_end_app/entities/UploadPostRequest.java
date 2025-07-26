@@ -16,7 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "upload_post_request")
-public class UploadPostRequest {
+public class UploadPostRequest extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
