@@ -74,11 +74,14 @@ public class PostController {
 
     //neu comment reply nam trong group post , thi can check user
     @GetMapping("/reply-comments/{commentId}")
-    public ApiResponse getReplyComment() {
+    public ApiResponse getReplyComment(
+            Pageable pageable,
+            @PathVariable @Min(value = 0, message = "postId must not be negative") Long commentId
+    ) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get reply comments")
-                .data(null)
+                .data(postService.getReplyComments(commentId, pageable))
                 .build();
     }
 }

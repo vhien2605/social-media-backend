@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.support.QuerydslJpaRepository;
 import org.springframework.stereotype.Service;
 
 
@@ -247,6 +248,37 @@ public class PostService {
                 .map(commentMapper::toDTO)
                 .toList();
 
+        return PageResponseDTO.builder()
+                .pageNo(pageable.getPageNumber())
+                .pageSize(pageable.getPageSize())
+                .totalPage(comments.getTotalPages())
+                .data(dtos)
+                .build();
+    }
+
+
+    public PageResponseDTO<Object> getReplyComments(Long targetCommentId, Pageable pageable) {
+        Comment targetComment = commentRepository.findById(targetCommentId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
+        Post targetPost = targetComment.getPost();
+        String userEmail = GlobalMethod.extractEmailFromContext();
+        if (targetPost.getType().equals(PostType.GROUP_POST)) {
+            // check if user in group
+            List<GroupUser> groupUsers = groupUserRepository.findAllByGroupId(targetPost.getGroup().getId());
+            boolean isUserInGroup = groupUsers.stream().anyMatch(gu -> gu.getUser().getEmail().equals(userEmail));
+            if (!isUserInGroup) {
+                throw new AppException(ErrorCode.ACCESS_DENIED);
+            }
+        }
+        Page<Comment> comments = commentRepository.findCommentsByReplyToId(targetCommentId, CommentType.REPLY_COMMENT, pageable);
+        List<Long> commentIds = comments.stream().map(Comment::getId).toList();
+        List<Comment> fetchedComments = commentRepository.findCommentsWithEmotionsByIds(commentIds);
+        Map<Long, Comment> idCommentMap = fetchedComments.stream()
+                .collect(Collectors.toMap(Comment::getId, c -> c));
+        List<CommentResponseDTO> dtos = commentIds
+                .stream().map(idCommentMap::get)
+                .map(commentMapper::toDTO)
+                .toList();
         return PageResponseDTO.builder()
                 .pageNo(pageable.getPageNumber())
                 .pageSize(pageable.getPageSize())

@@ -40,4 +40,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             WHERE c.id IN :ids
             """)
     List<Comment> findCommentsWithEmotionsByIds(@Param("ids") List<Long> commentIds);
+
+    @Query("""
+            SELECT c FROM Comment c
+            INNER JOIN c.replyTo cr
+            WHERE cr.id=:id
+            AND c.type=:type
+            ORDER BY c.createAt DESC
+            """)
+    Page<Comment> findCommentsByReplyToId(@Param("id") Long replyToId, @Param("type") CommentType commentType, Pageable pageable);
 }
