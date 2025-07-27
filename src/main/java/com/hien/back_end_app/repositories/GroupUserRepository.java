@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,4 +22,13 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
     public Optional<GroupUser> findByGroupIdAndUserId(@Param("groupId") Long groupId
             , @Param("userId") Long userId
     );
+
+
+    @Query("""
+            SELECT DISTINCT gu FROM GroupUser gu
+            INNER JOIN gu.group g
+            JOIN FETCH gu.user
+            WHERE g.id=:id
+            """)
+    public List<GroupUser> findAllByGroupId(@Param("id") Long groupId);
 }
