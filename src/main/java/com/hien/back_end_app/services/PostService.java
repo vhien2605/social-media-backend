@@ -2,22 +2,30 @@ package com.hien.back_end_app.services;
 
 
 import com.hien.back_end_app.dto.response.PageResponseDTO;
+import com.hien.back_end_app.dto.response.post.CommentResponseDTO;
 import com.hien.back_end_app.dto.response.post.PostResponseDTO;
+import com.hien.back_end_app.entities.Comment;
 import com.hien.back_end_app.entities.Follow;
+import com.hien.back_end_app.entities.GroupUser;
 import com.hien.back_end_app.entities.Post;
+import com.hien.back_end_app.exceptions.AppException;
+import com.hien.back_end_app.mappers.CommentMapper;
 import com.hien.back_end_app.mappers.PostMapper;
-import com.hien.back_end_app.repositories.FollowRepository;
-import com.hien.back_end_app.repositories.PostRepository;
+import com.hien.back_end_app.repositories.*;
 import com.hien.back_end_app.repositories.specification.SpecificationBuilder;
 import com.hien.back_end_app.utils.commons.AppConst;
 import com.hien.back_end_app.utils.commons.GlobalMethod;
+import com.hien.back_end_app.utils.enums.CommentType;
+import com.hien.back_end_app.utils.enums.ErrorCode;
 import com.hien.back_end_app.utils.enums.PostType;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.dialect.function.ListaggStringAggEmulation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.support.QuerydslJpaRepository;
 import org.springframework.stereotype.Service;
 
 
@@ -34,6 +42,10 @@ public class PostService {
     private final FollowRepository followRepository;
     private final PostRepository postRepository;
     private final PostMapper postMapper;
+    private final PostMediaRepository postMediaRepository;
+    private final GroupUserRepository groupUserRepository;
+    private final CommentRepository commentRepository;
+    private final CommentMapper commentMapper;
 
     public PageResponseDTO<Object> getPosts(Pageable pageable) {
         // find target follows
@@ -209,6 +221,68 @@ public class PostService {
                 .pageNo(pageable.getPageNumber())
                 .pageSize(pageable.getPageSize())
                 .totalPage(posts.getTotalPages())
+                .data(dtos)
+                .build();
+    }
+
+    public PageResponseDTO<Object> getPostComments(Long postId, Pageable pageable) {
+        String email = GlobalMethod.extractEmailFromContext();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_EXIST));
+        //if group post,check that user is in group?
+        if (post.getType().equals(PostType.GROUP_POST)) {
+            List<GroupUser> groupUsers = groupUserRepository.findAllByGroupId(post.getGroup().getId());
+            boolean isUserInGroup = groupUsers.stream()
+                    .anyMatch(gu -> gu.getUser().getEmail().equals(email));
+            if (!isUserInGroup) {
+                throw new AppException(ErrorCode.ACCESS_DENIED);
+            }
+        }
+        Page<Comment> comments = commentRepository.findCommentsByPostId(postId, CommentType.POST_COMMENT, pageable);
+        List<Long> commentIds = comments.stream().map(Comment::getId).toList();
+        List<Comment> fetchedComments = commentRepository.findCommentsWithEmotionsByIds(commentIds);
+        Map<Long, Comment> idCommentMap = fetchedComments.stream()
+                .collect(Collectors.toMap(Comment::getId, c -> c));
+        List<CommentResponseDTO> dtos = commentIds
+                .stream().map(idCommentMap::get)
+                .map(commentMapper::toDTO)
+                .toList();
+
+        return PageResponseDTO.builder()
+                .pageNo(pageable.getPageNumber())
+                .pageSize(pageable.getPageSize())
+                .totalPage(comments.getTotalPages())
+                .data(dtos)
+                .build();
+    }
+
+
+    public PageResponseDTO<Object> getReplyComments(Long targetCommentId, Pageable pageable) {
+        Comment targetComment = commentRepository.findById(targetCommentId)
+                .orElseThrow(() -> new AppException(ErrorCode.COMMENT_NOT_EXIST));
+        Post targetPost = targetComment.getPost();
+        String userEmail = GlobalMethod.extractEmailFromContext();
+        if (targetPost.getType().equals(PostType.GROUP_POST)) {
+            // check if user in group
+            List<GroupUser> groupUsers = groupUserRepository.findAllByGroupId(targetPost.getGroup().getId());
+            boolean isUserInGroup = groupUsers.stream().anyMatch(gu -> gu.getUser().getEmail().equals(userEmail));
+            if (!isUserInGroup) {
+                throw new AppException(ErrorCode.ACCESS_DENIED);
+            }
+        }
+        Page<Comment> comments = commentRepository.findCommentsByReplyToId(targetCommentId, CommentType.REPLY_COMMENT, pageable);
+        List<Long> commentIds = comments.stream().map(Comment::getId).toList();
+        List<Comment> fetchedComments = commentRepository.findCommentsWithEmotionsByIds(commentIds);
+        Map<Long, Comment> idCommentMap = fetchedComments.stream()
+                .collect(Collectors.toMap(Comment::getId, c -> c));
+        List<CommentResponseDTO> dtos = commentIds
+                .stream().map(idCommentMap::get)
+                .map(commentMapper::toDTO)
+                .toList();
+        return PageResponseDTO.builder()
+                .pageNo(pageable.getPageNumber())
+                .pageSize(pageable.getPageSize())
+                .totalPage(comments.getTotalPages())
                 .data(dtos)
                 .build();
     }

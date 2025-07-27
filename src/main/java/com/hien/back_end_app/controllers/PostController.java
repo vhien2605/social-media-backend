@@ -4,13 +4,11 @@ package com.hien.back_end_app.controllers;
 import com.hien.back_end_app.dto.response.ApiResponse;
 import com.hien.back_end_app.dto.response.ApiSuccessResponse;
 import com.hien.back_end_app.services.PostService;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/post")
@@ -62,20 +60,28 @@ public class PostController {
 
     // neu la group_post-> phai o trong group moi duoc coi
     @GetMapping("/post-comments/{postId}")
-    public ApiResponse getCommentFromPost() {
+    public ApiResponse getCommentFromPost(
+            Pageable pageable,
+            @PathVariable @Min(value = 0, message = "postId must not be negative") Long postId
+    ) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get post comments")
-                .data(null)
+                .data(postService.getPostComments(postId, pageable))
                 .build();
     }
 
+
+    //neu comment reply nam trong group post , thi can check user
     @GetMapping("/reply-comments/{commentId}")
-    public ApiResponse getReplyComment() {
+    public ApiResponse getReplyComment(
+            Pageable pageable,
+            @PathVariable @Min(value = 0, message = "postId must not be negative") Long commentId
+    ) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get reply comments")
-                .data(null)
+                .data(postService.getReplyComments(commentId, pageable))
                 .build();
     }
 }

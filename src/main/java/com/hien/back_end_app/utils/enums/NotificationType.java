@@ -22,10 +22,6 @@ public enum NotificationType {
     GROUP_POST,
     @JsonProperty("group_invite")
     GROUP_INVITE,
-    @JsonProperty("group_comment_post")
-    GROUP_COMMENT_POST,
-    @JsonProperty("group_comment_reply")
-    GROUP_COMMENT_REPLY,
     UNKNOWN;
 
     @JsonCreator
