@@ -2,6 +2,7 @@ package com.hien.back_end_app.services;
 
 import com.hien.back_end_app.entities.*;
 import com.hien.back_end_app.exceptions.AppException;
+import com.hien.back_end_app.exceptions.AuthException;
 import com.hien.back_end_app.repositories.RedisTokenRepository;
 import com.hien.back_end_app.repositories.TokenRepository;
 import com.hien.back_end_app.utils.enums.ErrorCode;
@@ -78,7 +79,7 @@ public class JwtService {
             jwsObject.sign(new MACSigner(secretKey));
         } catch (JOSEException e) {
             log.error(ErrorCode.JWT_SIGN_ERROR.name(), e);
-            throw new AppException(ErrorCode.JWT_SIGN_ERROR);
+            throw new AuthException(ErrorCode.JWT_SIGN_ERROR);
         }
         return jwsObject.serialize();
     }
@@ -91,19 +92,19 @@ public class JwtService {
             String secretKey = getSecretKey(type);
             JWSVerifier verifier = new MACVerifier(secretKey);
             if (!signedJWT.verify(verifier)) {
-                throw new AppException(ErrorCode.TOKEN_SIGNATURE_INVALID);
+                throw new AuthException(ErrorCode.TOKEN_SIGNATURE_INVALID);
             }
             // check expiration
             Date expiration = extractExpiration(token);
             if (expiration == null || new Date().after(expiration)) {
-                throw new AppException(ErrorCode.TOKEN_EXPIRED);
+                throw new AuthException(ErrorCode.TOKEN_EXPIRED);
             }
             // check disable or token black list
             checkDisabled(token, type);
         } catch (ParseException e) {
-            throw new AppException(ErrorCode.TOKEN_INVALID);
+            throw new AuthException(ErrorCode.TOKEN_INVALID);
         } catch (JOSEException e) {
-            throw new AppException(ErrorCode.TOKEN_SIGNATURE_INVALID);
+            throw new AuthException(ErrorCode.TOKEN_SIGNATURE_INVALID);
         }
     }
 
@@ -112,12 +113,12 @@ public class JwtService {
         if (type.equals(TokenType.ACCESS)) {
             Optional<RedisToken> redisToken = redisTokenRepository.findById(jti);
             if (redisToken.isPresent()) {
-                throw new AppException(ErrorCode.TOKEN_BLACK_LIST);
+                throw new AuthException(ErrorCode.TOKEN_BLACK_LIST);
             }
         } else {
             Optional<Token> refresh = tokenRepository.findById(jti);
             if (refresh.isEmpty()) {
-                throw new AppException(ErrorCode.TOKEN_DISABLED);
+                throw new AuthException(ErrorCode.TOKEN_DISABLED);
             }
         }
     }
@@ -139,7 +140,7 @@ public class JwtService {
             case ACCESS -> accessKey;
             case REFRESH -> refreshKey;
             case RESET -> resetKey;
-            default -> throw new AppException(ErrorCode.TOKEN_INVALID);
+            default -> throw new AuthException(ErrorCode.TOKEN_INVALID);
         };
     }
 

@@ -13,7 +13,7 @@ import org.springframework.web.context.request.WebRequest;
 @Slf4j
 public class GlobalExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.OK)
-    @ExceptionHandler({AppException.class})
+    @ExceptionHandler({AppException.class, AuthException.class})
     public ApiResponse handleAppException(AppException e, WebRequest request) {
         log.info("---------------------------Application exception handler start---------------------------");
         String error = e.getMessage();

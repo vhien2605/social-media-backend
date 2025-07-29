@@ -9,6 +9,7 @@ import com.hien.back_end_app.entities.Role;
 import com.hien.back_end_app.entities.Token;
 import com.hien.back_end_app.entities.User;
 import com.hien.back_end_app.exceptions.AppException;
+import com.hien.back_end_app.exceptions.AuthException;
 import com.hien.back_end_app.mappers.UserMapper;
 import com.hien.back_end_app.repositories.RoleRepository;
 import com.hien.back_end_app.repositories.UserRepository;
@@ -121,6 +122,14 @@ public class AuthenticationService {
 
 
     public String changePassword(ChangePasswordRequestDTO dto) {
+        String accessToken = dto.getAccessToken();
+        String newPassword = dto.getNewPassword();
+        jwtService.checkValid(accessToken, TokenType.ACCESS);
+        String email = jwtService.extractUsername(accessToken);
+        User user = userRepository.findByEmailWithNoReferences(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
         return "Changed new password";
     }
 }
