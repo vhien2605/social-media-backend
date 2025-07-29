@@ -35,7 +35,7 @@ public class UserController {
         return ApiSuccessResponse.builder()
                 .message("create user successfully")
                 .status(200)
-                .data("")
+                .data(null)
                 .build();
     }
 }

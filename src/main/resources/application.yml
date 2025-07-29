@@ -30,6 +30,11 @@ spring:
     show-sql: true
   sql:
     init-mode: always
+  database:
+    redis:
+      host: ${redisHost}
+      password: ${redisPassword}
+      port: ${redisPort}
 
 security:
   jwt:
