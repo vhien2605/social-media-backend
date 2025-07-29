@@ -87,14 +87,16 @@ public class AuthenticationService {
                 .build();
     }
 
-    public UserResponseDTO register(UserCreationRequestDTO dto) {
+    public UserResponseDTO register(RegisterRequestDTO dto) {
         String email = dto.getEmail();
         String password = dto.getPassword();
         boolean existsByEmail = userRepository.existsByEmail(email);
         if (existsByEmail) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
-        User user = userMapper.toEntity(dto);
+        User user = new User();
+        user.setFullName(dto.getFullName());
+        user.setEmail(email);
         user.setAuthProvider(AuthProvider.STANDARD);
         user.setPassword(passwordEncoder.encode(password));
         Role role = roleRepository.findByName("USER")

@@ -13,7 +13,7 @@ import org.springframework.web.context.request.WebRequest;
 @Slf4j
 public class GlobalExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.OK)
-    @ExceptionHandler({AppException.class, AuthException.class})
+    @ExceptionHandler({AppException.class})
     public ApiResponse handleAppException(AppException e, WebRequest request) {
         log.info("---------------------------Application exception handler start---------------------------");
         String error = e.getMessage();
@@ -24,6 +24,20 @@ public class GlobalExceptionHandlerAdvice {
                 .path(request.getDescription(false))
                 .build();
     }
+
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler({AuthException.class})
+    public ApiResponse handleAuthException(AuthException e, WebRequest request) {
+        log.info("---------------------------Auth exception handler start---------------------------");
+        String error = e.getMessage();
+        return ApiErrorResponse.builder()
+                .status(e.getErrorCode().getCode())
+                .message(e.getErrorCode().getMessage())
+                .error(e.getErrorCode().name())
+                .path(request.getDescription(false))
+                .build();
+    }
+
 
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler({Exception.class})

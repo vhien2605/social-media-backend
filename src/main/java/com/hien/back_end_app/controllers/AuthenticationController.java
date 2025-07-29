@@ -28,7 +28,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ApiResponse registerStandardAccount(@Valid @RequestBody UserCreationRequestDTO dto) {
+    public ApiResponse registerStandardAccount(@Valid @RequestBody RegisterRequestDTO dto) {
         return ApiSuccessResponse.builder()
                 .message("register new account successfully")
                 .status(200)
