@@ -42,6 +42,14 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @Override
     Optional<User> findById(Long aLong);
-    
+
     public boolean existsByEmail(String email);
+
+    @Modifying
+    @Transactional
+    @Query("""
+            UPDATE User u SET u.password=:password
+            WHERE u.email=:email
+            """)
+    public void updatePasswordByEmail(@Param("email") String email, @Param("password") String password);
 }
