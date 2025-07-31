@@ -3,13 +3,13 @@ package com.hien.back_end_app.services;
 
 import com.hien.back_end_app.dto.request.*;
 import com.hien.back_end_app.dto.response.auth.JwtResponseDTO;
+import com.hien.back_end_app.dto.response.auth.ResetResponseDTO;
 import com.hien.back_end_app.dto.response.user.UserResponseDTO;
 import com.hien.back_end_app.entities.RedisToken;
 import com.hien.back_end_app.entities.Role;
 import com.hien.back_end_app.entities.Token;
 import com.hien.back_end_app.entities.User;
 import com.hien.back_end_app.exceptions.AppException;
-import com.hien.back_end_app.exceptions.AuthException;
 import com.hien.back_end_app.mappers.UserMapper;
 import com.hien.back_end_app.repositories.RoleRepository;
 import com.hien.back_end_app.repositories.UserRepository;
@@ -134,4 +134,30 @@ public class AuthenticationService {
         userRepository.save(user);
         return "Changed new password";
     }
+
+    public ResetResponseDTO forgot(ForgotPasswordRequestDTO dto) {
+        String registerEmail = dto.getRegisterEmail();
+        // send resetToken via email
+        // but for simply, send to rest
+        User user = userRepository.findByEmail(registerEmail)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        String resetToken = jwtService.generateToken(user, TokenType.RESET);
+
+        return ResetResponseDTO.builder()
+                .resetToken(resetToken)
+                .build();
+    }
+
+    public String reset(ResetPasswordRequestDTO dto) {
+        String resetToken = dto.getResetToken();
+        String resetPassword = dto.getResetPassword();
+        jwtService.checkValid(resetToken, TokenType.RESET);
+        String email = jwtService.extractUsername(resetToken);
+        boolean isUserExist = userRepository.existsByEmail(email);
+        if (isUserExist) {
+            userRepository.updatePasswordByEmail(email, passwordEncoder.encode(resetPassword));
+        }
+        return "reset password";
+    }
 }
+

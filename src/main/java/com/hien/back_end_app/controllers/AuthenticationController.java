@@ -64,20 +64,20 @@ public class AuthenticationController {
     }
 
     @PostMapping("/forgot-password")
-    public ApiResponse forgotPassword() {
+    public ApiResponse forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO dto) {
         return ApiSuccessResponse.builder()
                 .message("returning reset token successfully")
                 .status(200)
-                .data(null)
+                .data(authenticationService.forgot(dto))
                 .build();
     }
 
     @PatchMapping("/reset-password")
-    public ApiResponse resetPassword() {
+    public ApiResponse resetPassword(@Valid @RequestBody ResetPasswordRequestDTO dto) {
         return ApiSuccessResponse.builder()
                 .message("reset password successfully")
                 .status(200)
-                .data(null)
+                .data(authenticationService.reset(dto))
                 .build();
     }
 }

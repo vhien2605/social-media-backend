@@ -16,7 +16,7 @@ public enum ErrorCode {
     TOKEN_SIGNATURE_INVALID(401, "given token signature is invalid", HttpStatus.BAD_REQUEST),
     TOKEN_DISABLED(401, "given token is disable by logged out", HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(401, "given token is expired", HttpStatus.BAD_REQUEST),
-    USER_NOT_EXISTED(400, "can't find any user with given email", HttpStatus.BAD_REQUEST),
+    USER_NOT_EXISTED(400, "can't find any user with given input", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(401, "user unathorized", HttpStatus.UNAUTHORIZED),
     ACCESS_DENIED(403, "you are not allowed to do this action", HttpStatus.FORBIDDEN),
     AUTHORITY_TYPE_INVALID(400, "authority type is invalid, try again", HttpStatus.BAD_REQUEST),
