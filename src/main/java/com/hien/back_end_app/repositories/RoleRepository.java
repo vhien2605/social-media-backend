@@ -1,6 +1,7 @@
 package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.Role;
+import jakarta.validation.constraints.Past;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,11 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
             "permissions"
     })
     public Optional<Role> findByName(String name);
+
+    @Query("""
+            SELECT r FROM Role r
+            JOIN FETCH r.permissions
+            WHERE r.name IN :names
+            """)
+    public List<Role> findAllInNames(@Param("names") List<String> names);
 }

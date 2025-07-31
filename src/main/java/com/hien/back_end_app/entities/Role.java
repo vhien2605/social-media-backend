@@ -26,8 +26,8 @@ public class Role extends AbstractEntity {
 
     @Column(name = "description")
     private String description;
-    
-    @ManyToMany
+
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private Set<Permission> permissions;
 }
