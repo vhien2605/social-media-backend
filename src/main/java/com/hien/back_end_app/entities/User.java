@@ -1,5 +1,6 @@
 package com.hien.back_end_app.entities;
 
+import com.hien.back_end_app.repositories.specification.SupportsSpecification;
 import com.hien.back_end_app.utils.anotations.EnumPattern;
 import com.hien.back_end_app.utils.enums.AuthProvider;
 import com.hien.back_end_app.utils.enums.Gender;
@@ -19,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User extends AbstractEntity {
+public class User extends AbstractEntity implements SupportsSpecification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
