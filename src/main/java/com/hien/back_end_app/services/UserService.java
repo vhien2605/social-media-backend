@@ -1,7 +1,11 @@
 package com.hien.back_end_app.services;
 
 import com.hien.back_end_app.dto.request.*;
+import com.hien.back_end_app.dto.response.ApiResponse;
+import com.hien.back_end_app.dto.response.PageResponseDTO;
+import com.hien.back_end_app.dto.response.user.UserDetailResponseDTO;
 import com.hien.back_end_app.dto.response.user.UserResponseDTO;
+import com.hien.back_end_app.entities.Message;
 import com.hien.back_end_app.entities.Permission;
 import com.hien.back_end_app.entities.Role;
 import com.hien.back_end_app.entities.User;
@@ -11,6 +15,8 @@ import com.hien.back_end_app.mappers.UserMapper;
 import com.hien.back_end_app.repositories.PermissionRepository;
 import com.hien.back_end_app.repositories.RoleRepository;
 import com.hien.back_end_app.repositories.UserRepository;
+import com.hien.back_end_app.repositories.specification.SpecificationBuilder;
+import com.hien.back_end_app.utils.commons.AppConst;
 import com.hien.back_end_app.utils.enums.AuthProvider;
 import com.hien.back_end_app.utils.enums.ErrorCode;
 import com.hien.back_end_app.utils.enums.Gender;
@@ -18,11 +24,18 @@ import com.hien.back_end_app.utils.enums.UserStatus;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.dialect.function.ListaggStringAggEmulation;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -125,4 +138,79 @@ public class UserService {
         return userMapper.toDTO(targetUser);
     }
 
+    public PageResponseDTO<Object> getUsersPagination(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
+        List<Long> userIds = users.stream().map(User::getId).toList();
+        List<User> fetchedUsers = userRepository.findAllByIds(userIds);
+        Map<Long, User> idUserMap = fetchedUsers.stream()
+                .collect(Collectors.toMap(User::getId, fu -> fu));
+        List<UserResponseDTO> dtos = userIds.stream()
+                .map(idUserMap::get)
+                .map(userMapper::toDTO)
+                .toList();
+
+        return PageResponseDTO.builder()
+                .data(dtos)
+                .pageNo(pageable.getPageNumber())
+                .pageSize(pageable.getPageSize())
+                .totalPage(users.getTotalPages())
+                .build();
+    }
+
+
+    public PageResponseDTO<Object> getUsersFilter(Pageable pageable, String[] user, String[] sortBy) {
+        SpecificationBuilder<User> builder = new SpecificationBuilder<>();
+        Pattern pattern = Pattern.compile(AppConst.SEARCH_SPEC_OPERATOR);
+        Pattern sortPattern = Pattern.compile(AppConst.SORT_BY);
+        // loop conversation and build specification
+        // loop other predicate
+        for (String s : user) {
+            Matcher matcher = pattern.matcher(s);
+            if (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3),
+                        matcher.group(4), matcher.group(5), matcher.group(6));
+            }
+        }
+        Specification<User> specification = builder.build();
+
+        // add sort by createAt desc
+        List<Sort.Order> sortOrders = new ArrayList<>();
+        for (String sb : sortBy) {
+            Matcher sortMatcher = sortPattern.matcher(sb);
+            if (sortMatcher.find()) {
+                String field = sortMatcher.group(1);
+                String value = sortMatcher.group(3);
+                Sort.Direction direction = (value.equalsIgnoreCase("ASC")) ? Sort.Direction.ASC : Sort.Direction.DESC;
+                sortOrders.add(new Sort.Order(direction, field));
+            }
+        }
+        Sort sort = Sort.by(sortOrders);
+        // insert sort property into pageable
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+        Page<User> users = userRepository.findAll(specification, sortedPageable);
+
+        List<Long> userIds = users.stream().map(User::getId).toList();
+        List<User> fetchedUsers = userRepository.findAllByIds(userIds);
+        Map<Long, User> idUserMap = fetchedUsers.stream()
+                .collect(Collectors.toMap(User::getId, fu -> fu));
+        List<UserResponseDTO> dtos = userIds.stream()
+                .map(idUserMap::get)
+                .map(userMapper::toDTO)
+                .toList();
+
+        return PageResponseDTO.builder()
+                .data(dtos)
+                .pageNo(pageable.getPageNumber())
+                .pageSize(pageable.getPageSize())
+                .totalPage(users.getTotalPages())
+                .build();
+    }
+
+    public UserDetailResponseDTO getDetailInformation(Long userId) {
+        User user = userRepository.findByIdWithFollowersAndAlbums(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toUserDetailDTO(user);
+    }
 }

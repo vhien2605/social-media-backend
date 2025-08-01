@@ -2,6 +2,8 @@ package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.User;
 import com.hien.back_end_app.utils.enums.UserStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
@@ -43,6 +45,18 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Override
     Optional<User> findById(Long aLong);
 
+    @Query("""
+            SELECT u FROM User u
+            INNER JOIN FETCH u.roles r
+            INNER JOIN FETCH r.permissions
+            LEFT JOIN FETCH u.follows f
+            LEFT JOIN FETCH f.followUser
+            LEFT JOIN FETCH u.albums al
+            LEFT JOIN FETCH al.albumPhotos
+            WHERE u.id=:id
+            """)
+    Optional<User> findByIdWithFollowersAndAlbums(@Param("id") Long id);
+
 
     @Query("""
             SELECT u FROM User u
@@ -61,4 +75,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             WHERE u.email=:email
             """)
     public void updatePasswordByEmail(@Param("email") String email, @Param("password") String password);
+
+
+    @Override
+    Page<User> findAll(Pageable pageable);
 }
