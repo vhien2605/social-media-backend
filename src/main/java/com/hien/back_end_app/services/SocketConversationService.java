@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,7 @@ public class SocketConversationService {
             return;
         }
         // check conversation
-        Conversation conversation = conversationRepository.findById(conversationId).
+        Conversation conversation = conversationRepository.findByIdWithUserCreatedAndParticipants(conversationId).
                 orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
         conversation.setLatestMessageTime(new Date());
         conversationRepository.save(conversation);
@@ -53,10 +54,12 @@ public class SocketConversationService {
         String email = accessor.getUser().getName();
         User createdUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        if (!(createdUser.getId() == conversation.getUser().getId())) {
+        // check user in conversation or not
+        if (createdUser.getId() != conversation.getUser().getId()
+                && conversation.getParticipants().stream().noneMatch(p -> p.getId() == createdUser.getId())
+        ) {
             throw new AppException(ErrorCode.USER_NOT_HAVE_CONVERSATION);
         }
-
         if (request.getSocketMessageMediaDTO() == null) {
             Message message = Message.builder()
                     .content(request.getContent())
@@ -109,8 +112,12 @@ public class SocketConversationService {
 
         // send notification
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+        // send to all users, avoid createdUser
         Set<User> participants = conversation.getParticipants();
-        for (User u : participants) {
+        participants.add(conversation.getUser());
+        Set<User> filteredParticipants = participants.
+                stream().filter(p -> p.getId() != createdUser.getId()).collect(Collectors.toSet());
+        for (User u : filteredParticipants) {
             simpMessagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/notifications", notificationResponseDTO);
         }
     }
@@ -217,7 +224,6 @@ public class SocketConversationService {
         User createdUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         List<User> participants = userRepository.findAllByIds(new ArrayList<>(participantIds));
-
         Conversation conversation = Conversation.builder()
                 .name(name)
                 .user(createdUser)
