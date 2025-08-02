@@ -10,9 +10,9 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PermissionRequestDTO implements Serializable {
-    @NotBlank(message = "name is required")
-    private String name;
+public class AlbumCreateRequestDTO implements Serializable {
+    @NotBlank(message = "title is required")
+    private String title;
     @NotBlank(message = "description is required")
     private String description;
 }

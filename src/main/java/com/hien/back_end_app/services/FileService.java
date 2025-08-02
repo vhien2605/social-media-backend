@@ -20,10 +20,9 @@ public class FileService {
     private final AsyncFileService asyncFileService;
     private final Cloudinary cloudinary;
 
-    public String uploadFile(MultipartFile file, String type, String folderName) {
+    public String uploadFile(byte[] fileData, String extension, String type, String folderName) {
         String cloudName = cloudinary.config.cloudName;
         String uuid = UUID.randomUUID().toString();
-        String extension = getFileExtension(file);
         String subPath = "";
         if (type.contains("image")) {
             subPath = "image";
@@ -39,7 +38,7 @@ public class FileService {
         );
         // handle upload to cloud in sub thread
         try {
-            asyncFileService.handleUploadFile(file, folderName, uuid, cloudinary);
+            asyncFileService.handleUploadFile(fileData, folderName, uuid, cloudinary);
         } catch (IOException e) {
             throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
         }
@@ -68,7 +67,7 @@ public class FileService {
         );
     }
 
-    private String getFileExtension(MultipartFile file) {
+    public String getFileExtension(MultipartFile file) {
         String originalName = file.getOriginalFilename();
         if (originalName == null || !originalName.contains(".")) {
             return "jpg";

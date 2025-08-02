@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.io.IOException;
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandlerAdvice {
@@ -38,6 +40,19 @@ public class GlobalExceptionHandlerAdvice {
                 .build();
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler({IOException.class})
+    public ApiResponse handleIOCloudinaryEx(IOException e, WebRequest request) {
+        log.info("---------------------------IO exception handler start---------------------------");
+        String error = e.getMessage();
+        return ApiErrorResponse.builder()
+                .status(400)
+                .message(e.getMessage())
+                .error("Cloudinary failed")
+                .path(request.getDescription(false))
+                .build();
+    }
+
 
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler({Exception.class})
@@ -47,7 +62,7 @@ public class GlobalExceptionHandlerAdvice {
         return ApiErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .message(e.getMessage())
-                .error(e.getMessage())
+                .error(e.getCause().toString())
                 .path(request.getDescription(false))
                 .build();
     }

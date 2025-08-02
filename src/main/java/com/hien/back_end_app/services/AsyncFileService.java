@@ -14,9 +14,9 @@ import java.io.IOException;
 @Slf4j
 public class AsyncFileService {
     @Async
-    public void handleUploadFile(MultipartFile file, String folderName, String uuid, Cloudinary cloudinary) throws IOException {
+    public void handleUploadFile(byte[] fileBytes, String folderName, String uuid, Cloudinary cloudinary) throws IOException {
         log.info("Thread_upload: {}", Thread.currentThread().getName());
-        cloudinary.uploader().upload(file.getBytes(),
+        cloudinary.uploader().upload(fileBytes,
                 ObjectUtils.asMap(
                         "folder", folderName,
                         "public_id", uuid

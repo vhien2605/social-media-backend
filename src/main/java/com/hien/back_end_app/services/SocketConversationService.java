@@ -20,6 +20,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -70,9 +71,14 @@ public class SocketConversationService {
             //upload file to the cloud and get back url
             SocketMessageMediaDTO dto = request.getSocketMessageMediaDTO();
             MultipartFile file = fileService.convertToMultipartFile(dto.getName(), dto.getType(), dto.getBase64Data());
-            String fileUrl = fileService.uploadFile(file,
+            byte[] data = null;
+            try {
+                data = file.getBytes();
+            } catch (IOException e) {
+                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+            }
+            String fileUrl = fileService.uploadFile(data, fileService.getFileExtension(file),
                     request.getSocketMessageMediaDTO().getType(), "message_media");
-
             // save the message to database
             MessageMedia messageMedia = MessageMedia.builder()
                     .fileUrl(fileUrl)

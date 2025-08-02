@@ -15,6 +15,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -54,9 +55,16 @@ public class SocketPostService {
                             pm.getName(),
                             pm.getType(),
                             pm.getBase64Data()))
-                    .map(file -> fileService.uploadFile(file
-                            , Objects.requireNonNull(file.getContentType())
-                            , "post_media"))
+                    .map(file -> {
+                        try {
+                            return fileService.uploadFile(file.getBytes(),
+                                    fileService.getFileExtension(file)
+                                    , Objects.requireNonNull(file.getContentType())
+                                    , "post_media");
+                        } catch (IOException e) {
+                            throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+                        }
+                    })
                     .toList();
             Set<PostMedia> postMediaEntities = new HashSet<>();
             for (String fileUrl : fileUrls) {
@@ -226,9 +234,15 @@ public class SocketPostService {
                                 pm.getName(),
                                 pm.getType(),
                                 pm.getBase64Data()))
-                        .map(file -> fileService.uploadFile(file
-                                , Objects.requireNonNull(file.getContentType())
-                                , "post_media"))
+                        .map(file -> {
+                            try {
+                                return fileService.uploadFile(file.getBytes(), fileService.getFileExtension(file)
+                                        , Objects.requireNonNull(file.getContentType())
+                                        , "post_media");
+                            } catch (IOException e) {
+                                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+                            }
+                        })
                         .toList();
                 Set<PostMedia> postMediaEntities = new HashSet<>();
                 for (String fileUrl : fileUrls) {
@@ -274,9 +288,15 @@ public class SocketPostService {
                                 pm.getName(),
                                 pm.getType(),
                                 pm.getBase64Data()))
-                        .map(file -> fileService.uploadFile(file
-                                , Objects.requireNonNull(file.getContentType())
-                                , "post_media"))
+                        .map(file -> {
+                            try {
+                                return fileService.uploadFile(file.getBytes(), fileService.getFileExtension(file)
+                                        , Objects.requireNonNull(file.getContentType())
+                                        , "post_media");
+                            } catch (IOException e) {
+                                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+                            }
+                        })
                         .toList();
                 Set<PostRequestMedia> postMediaEntities = new HashSet<>();
                 for (String fileUrl : fileUrls) {
