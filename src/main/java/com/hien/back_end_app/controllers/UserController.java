@@ -1,12 +1,16 @@
 package com.hien.back_end_app.controllers;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hien.back_end_app.dto.request.UpdateRolesRequestDTO;
 import com.hien.back_end_app.dto.request.UpdateUserInformationRequestDTO;
 import com.hien.back_end_app.dto.request.UserCreationRequestDTO;
 import com.hien.back_end_app.dto.response.ApiResponse;
 import com.hien.back_end_app.dto.response.ApiSuccessResponse;
+import com.hien.back_end_app.exceptions.AppException;
 import com.hien.back_end_app.services.UserService;
+import com.hien.back_end_app.utils.enums.ErrorCode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
@@ -18,6 +22,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/v1/user")
@@ -25,24 +30,39 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private ObjectMapper objectMapper;
 
     @PreAuthorize("hasRole('SYS_ADMIN')")
     @PostMapping("/create")
-    public ApiResponse createUser(@RequestBody UserCreationRequestDTO dto) {
-        return ApiSuccessResponse.builder()
-                .message("create user successfully")
-                .status(200)
-                .data(userService.create(dto))
-                .build();
+    public ApiResponse createUser(
+            @RequestParam(required = false) MultipartFile image
+            , @RequestParam String dto) {
+        try {
+            UserCreationRequestDTO jsonDTO = objectMapper.readValue(dto, UserCreationRequestDTO.class);
+            return ApiSuccessResponse.builder()
+                    .message("create user successfully")
+                    .status(200)
+                    .data(userService.create(jsonDTO, image))
+                    .build();
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.JSON_INVALID);
+        }
     }
 
     @PatchMapping("/update")
-    public ApiResponse updateUser(@RequestBody @Valid UpdateUserInformationRequestDTO dto) {
-        return ApiSuccessResponse.builder()
-                .message("update normal information successfully")
-                .status(200)
-                .data(userService.update(dto))
-                .build();
+    public ApiResponse updateUser(
+            @RequestParam(required = false) MultipartFile image,
+            @RequestParam String dto) {
+        try {
+            UpdateUserInformationRequestDTO jsonDTO = objectMapper.readValue(dto, UpdateUserInformationRequestDTO.class);
+            return ApiSuccessResponse.builder()
+                    .message("update normal information successfully")
+                    .status(200)
+                    .data(userService.update(jsonDTO, image))
+                    .build();
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.JSON_INVALID);
+        }
     }
 
     @PatchMapping("/update-roles")
@@ -54,7 +74,6 @@ public class UserController {
                 .data(userService.updateRoles(dto))
                 .build();
     }
-
 
     @GetMapping("/get-users")
     @PreAuthorize("hasRole('SYS_ADMIN')")

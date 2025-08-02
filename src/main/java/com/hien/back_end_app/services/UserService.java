@@ -32,7 +32,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,10 +49,11 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final RoleMapper roleMapper;
     private final PermissionRepository permissionRepository;
+    private final FileService fileService;
 
 
     // just create user with standard login
-    public UserResponseDTO create(UserCreationRequestDTO dto) {
+    public UserResponseDTO create(UserCreationRequestDTO dto, MultipartFile image) {
         // main fields
         String email = dto.getEmail();
         String password = dto.getPassword();
@@ -77,14 +80,25 @@ public class UserService {
                 .gender(dto.getGender())
                 .roles(Set.of(userRole))
                 .build();
+
+        // if avatar file sent, setter it
+        if (image != null) {
+            String urlImage = fileService.uploadFile(image, Objects.requireNonNull(image.getContentType()), "avatar");
+            user.setImageUrl(urlImage);
+        }
+
         userRepository.save(user);
         return userMapper.toDTO(user);
     }
 
-    public UserResponseDTO update(UpdateUserInformationRequestDTO dto) {
+    public UserResponseDTO update(UpdateUserInformationRequestDTO dto, MultipartFile image) {
         long userId = dto.getUserId();
         User user = userRepository.findByIdWithRoles(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        if (image != null) {
+            String imageUrl = fileService.uploadFile(image, Objects.requireNonNull(image.getContentType()), "avatar");
+            user.setImageUrl(imageUrl);
+        }
         user.setFullName(dto.getFullName());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setAddress(dto.getAddress());
