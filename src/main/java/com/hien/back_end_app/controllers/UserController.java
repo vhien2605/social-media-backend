@@ -3,6 +3,7 @@ package com.hien.back_end_app.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hien.back_end_app.dto.request.AlbumCreateRequestDTO;
 import com.hien.back_end_app.dto.request.UpdateRolesRequestDTO;
 import com.hien.back_end_app.dto.request.UpdateUserInformationRequestDTO;
 import com.hien.back_end_app.dto.request.UserCreationRequestDTO;
@@ -24,19 +25,21 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/v1/user")
 @Validated
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @PreAuthorize("hasRole('SYS_ADMIN')")
     @PostMapping("/create")
     public ApiResponse createUser(
-            @RequestParam(required = false) MultipartFile image
-            , @RequestParam String dto) {
+            @RequestParam(name = "image", required = false) MultipartFile image
+            , @RequestParam(name = "data") String dto) {
         try {
             UserCreationRequestDTO jsonDTO = objectMapper.readValue(dto, UserCreationRequestDTO.class);
             return ApiSuccessResponse.builder()
@@ -51,8 +54,8 @@ public class UserController {
 
     @PatchMapping("/update")
     public ApiResponse updateUser(
-            @RequestParam(required = false) MultipartFile image,
-            @RequestParam String dto) {
+            @RequestParam(name = "image", required = false) MultipartFile image,
+            @RequestParam(name = "data") String dto) {
         try {
             UpdateUserInformationRequestDTO jsonDTO = objectMapper.readValue(dto, UpdateUserInformationRequestDTO.class);
             return ApiSuccessResponse.builder()
@@ -106,5 +109,22 @@ public class UserController {
                 .status(200)
                 .data(userService.getDetailInformation(userId))
                 .build();
+    }
+
+    @PostMapping("/create-album")
+    public ApiResponse createOwnedAlbum(
+            @RequestParam(name = "images") List<MultipartFile> images,
+            @RequestParam(name = "data") String dto
+    ) {
+        try {
+            AlbumCreateRequestDTO jsonDTO = objectMapper.readValue(dto, AlbumCreateRequestDTO.class);
+            return ApiSuccessResponse.builder()
+                    .message("update user roles successfully")
+                    .status(200)
+                    .data(userService.createAlbum(jsonDTO, images))
+                    .build();
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.JSON_INVALID);
+        }
     }
 }

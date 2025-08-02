@@ -2,9 +2,7 @@ package com.hien.back_end_app.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -12,6 +10,8 @@ import java.util.Set;
 @Setter
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateConversationRequestDTO implements Serializable {
     @NotBlank(message = "name must not be blank")
     private String name;

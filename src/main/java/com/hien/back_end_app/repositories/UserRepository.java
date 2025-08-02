@@ -28,6 +28,14 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             """)
     public Optional<User> findByEmailWithNoReferences(@Param("email") String email);
 
+
+    @Query("""
+            SELECT u FROM User u
+            LEFT JOIN FETCH u.albums a
+            WHERE u.email=:email
+            """)
+    public Optional<User> findByEmailWithAlbums(@Param("email") String email);
+
     @EntityGraph(attributePaths = {
             "roles",
             "roles.permissions"

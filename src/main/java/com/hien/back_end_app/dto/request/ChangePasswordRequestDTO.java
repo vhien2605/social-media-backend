@@ -3,15 +3,15 @@ package com.hien.back_end_app.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 
 @Setter
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChangePasswordRequestDTO implements Serializable {
     @NotBlank(message = "token is required")
     private String accessToken;

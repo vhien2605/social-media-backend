@@ -3,20 +3,18 @@ package com.hien.back_end_app.services;
 import com.hien.back_end_app.dto.request.*;
 import com.hien.back_end_app.dto.response.ApiResponse;
 import com.hien.back_end_app.dto.response.PageResponseDTO;
+import com.hien.back_end_app.dto.response.album.AlbumResponseDTO;
 import com.hien.back_end_app.dto.response.user.UserDetailResponseDTO;
 import com.hien.back_end_app.dto.response.user.UserResponseDTO;
-import com.hien.back_end_app.entities.Message;
-import com.hien.back_end_app.entities.Permission;
-import com.hien.back_end_app.entities.Role;
-import com.hien.back_end_app.entities.User;
+import com.hien.back_end_app.entities.*;
 import com.hien.back_end_app.exceptions.AppException;
+import com.hien.back_end_app.mappers.AlbumMapper;
 import com.hien.back_end_app.mappers.RoleMapper;
 import com.hien.back_end_app.mappers.UserMapper;
-import com.hien.back_end_app.repositories.PermissionRepository;
-import com.hien.back_end_app.repositories.RoleRepository;
-import com.hien.back_end_app.repositories.UserRepository;
+import com.hien.back_end_app.repositories.*;
 import com.hien.back_end_app.repositories.specification.SpecificationBuilder;
 import com.hien.back_end_app.utils.commons.AppConst;
+import com.hien.back_end_app.utils.commons.GlobalMethod;
 import com.hien.back_end_app.utils.enums.AuthProvider;
 import com.hien.back_end_app.utils.enums.ErrorCode;
 import com.hien.back_end_app.utils.enums.Gender;
@@ -35,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,6 +49,9 @@ public class UserService {
     private final RoleMapper roleMapper;
     private final PermissionRepository permissionRepository;
     private final FileService fileService;
+    private final AlbumRepository albumRepository;
+    private final AlbumImageRepository albumImageRepository;
+    private final AlbumMapper albumMapper;
 
 
     // just create user with standard login
@@ -83,8 +85,12 @@ public class UserService {
 
         // if avatar file sent, setter it
         if (image != null) {
-            String urlImage = fileService.uploadFile(image, Objects.requireNonNull(image.getContentType()), "avatar");
-            user.setImageUrl(urlImage);
+            try {
+                String urlImage = fileService.uploadFile(image.getBytes(), fileService.getFileExtension(image), Objects.requireNonNull(image.getContentType()), "avatar");
+                user.setImageUrl(urlImage);
+            } catch (IOException e) {
+                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+            }
         }
 
         userRepository.save(user);
@@ -95,10 +101,17 @@ public class UserService {
         long userId = dto.getUserId();
         User user = userRepository.findByIdWithRoles(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // set avatar
         if (image != null) {
-            String imageUrl = fileService.uploadFile(image, Objects.requireNonNull(image.getContentType()), "avatar");
-            user.setImageUrl(imageUrl);
+            try {
+                String urlImage = fileService.uploadFile(image.getBytes(), fileService.getFileExtension(image), Objects.requireNonNull(image.getContentType()), "avatar");
+                user.setImageUrl(urlImage);
+            } catch (IOException e) {
+                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+            }
         }
+
         user.setFullName(dto.getFullName());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setAddress(dto.getAddress());
@@ -226,5 +239,47 @@ public class UserService {
         User user = userRepository.findByIdWithFollowersAndAlbums(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return userMapper.toUserDetailDTO(user);
+    }
+
+
+    @Transactional
+    public AlbumResponseDTO createAlbum(AlbumCreateRequestDTO dto, List<MultipartFile> images) {
+        String albumTitle = dto.getTitle();
+        String albumDescription = dto.getDescription();
+
+        String email = GlobalMethod.extractEmailFromContext();
+        User ownedUser = userRepository.findByEmailWithAlbums(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // check name album
+        boolean albumIsExisted = ownedUser.getAlbums().stream()
+                .anyMatch(a -> a.getTitle().equalsIgnoreCase(albumTitle));
+        if (albumIsExisted) {
+            throw new AppException(ErrorCode.ALBUM_EXISTED);
+        }
+
+        Album album = Album.builder()
+                .title(albumTitle)
+                .description(albumDescription)
+                .user(ownedUser)
+                .build();
+        albumRepository.save(album);
+
+        Set<AlbumPhoto> albumPhotos = new HashSet<>();
+        for (MultipartFile image : images) {
+            try {
+                String imageUrl = fileService.uploadFile(image.getBytes(), fileService.getFileExtension(image), Objects.requireNonNull(image.getContentType()), "album_images");
+                AlbumPhoto albumPhoto = AlbumPhoto.builder()
+                        .album(album)
+                        .imageUrl(imageUrl)
+                        .build();
+                albumPhotos.add(albumPhoto);
+            } catch (IOException e) {
+                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+            }
+        }
+        albumImageRepository.saveAll(albumPhotos);
+        album.setAlbumPhotos(albumPhotos);
+        return albumMapper.toDTO(album);
     }
 }
