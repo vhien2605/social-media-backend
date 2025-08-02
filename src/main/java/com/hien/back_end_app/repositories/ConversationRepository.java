@@ -16,9 +16,18 @@ import java.util.Optional;
 
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, Long>, JpaSpecificationExecutor<Conversation> {
-    @Query("SELECT c FROM Conversation c INNER JOIN c.participants u WHERE c.id=:conversationId AND u.id=:userId")
+    @Query("""
+            SELECT c FROM Conversation c
+            INNER JOIN c.participants p
+            INNER JOIN c.user u
+            WHERE c.id=:conversationId
+            AND (
+                    p.id=:userId
+                    OR
+                    u.id=:userId
+                 )
+            """)
     public Optional<Conversation> findByConversationIdAndUserId(@Param("conversationId") long conversationId, @Param("userId") long userId);
-
 
     @Query("""
             SELECT DISTINCT c FROM Conversation c
