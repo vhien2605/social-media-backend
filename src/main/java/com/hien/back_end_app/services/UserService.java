@@ -282,4 +282,29 @@ public class UserService {
         album.setAlbumPhotos(albumPhotos);
         return albumMapper.toDTO(album);
     }
+
+    public PageResponseDTO<Object> getUserAlbums(Long userId, Pageable pageable) {
+        Page<Album> albums = albumRepository.findAllByUserId(userId, pageable);
+        List<Long> albumIds = albums.stream()
+                .map(Album::getId).toList();
+        List<Album> fetchedAlbums = albumRepository.findByIdsWithReferences(albumIds);
+        Map<Long, Album> idAlbumMap = fetchedAlbums.stream()
+                .collect(Collectors.toMap(
+                        Album::getId,
+                        fa -> fa
+                ));
+
+        List<AlbumResponseDTO> dtos = albumIds
+                .stream()
+                .map(idAlbumMap::get)
+                .map(albumMapper::toDTO)
+                .toList();
+
+        return PageResponseDTO.builder()
+                .pageNo(pageable.getPageNumber())
+                .pageSize(pageable.getPageSize())
+                .totalPage(albums.getTotalPages())
+                .data(dtos)
+                .build();
+    }
 }
