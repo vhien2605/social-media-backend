@@ -111,7 +111,7 @@ public class UserController {
                 .build();
     }
 
-    @PostMapping("/create-album")
+    @PostMapping("/album/create-album")
     public ApiResponse createOwnedAlbum(
             @RequestParam(name = "images") List<MultipartFile> images,
             @RequestParam(name = "data") String dto
@@ -126,5 +126,17 @@ public class UserController {
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.JSON_INVALID);
         }
+    }
+
+    @GetMapping("/{userId}/album/get-albums")
+    public ApiResponse getUserAlbums(
+            Pageable pageable,
+            @PathVariable @Min(value = 0, message = "user must be greater than 0") Long userId
+    ) {
+        return ApiSuccessResponse.builder()
+                .message("get albums successfully")
+                .status(200)
+                .data(userService.getUserAlbums(userId, pageable))
+                .build();
     }
 }
