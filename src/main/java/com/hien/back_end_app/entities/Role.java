@@ -2,10 +2,7 @@ package com.hien.back_end_app.entities;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
@@ -15,6 +12,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Role extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

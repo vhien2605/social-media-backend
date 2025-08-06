@@ -8,6 +8,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PermissionRepository extends JpaRepository<Permission, Long> {
@@ -17,4 +18,11 @@ public interface PermissionRepository extends JpaRepository<Permission, Long> {
             WHERE p.name IN :names
             """)
     public List<Permission> findAllInNames(@Param("names") List<String> names);
+
+
+    @Query("""
+            SELECT p FROM Permission p
+            WHERE p.name=:name
+            """)
+    public Optional<Permission> findByName(@Param("name") String name);
 }
