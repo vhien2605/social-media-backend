@@ -22,6 +22,8 @@ public enum NotificationType {
     GROUP_POST,
     @JsonProperty("group_invite")
     GROUP_INVITE,
+    @JsonProperty("general")
+    GENERAL,
     UNKNOWN;
 
     @JsonCreator
