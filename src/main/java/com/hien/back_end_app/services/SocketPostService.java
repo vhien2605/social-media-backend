@@ -35,6 +35,7 @@ public class SocketPostService {
     private final GroupUserRepository groupUserRepository;
     private final UploadPostRequestRepository uploadPostRequestRepository;
     private final PostRequestMediaRepository postRequestMediaRepository;
+    private final ReceiverNotificationRepository receiverNotificationRepository;
 
 
     @Transactional
@@ -94,10 +95,20 @@ public class SocketPostService {
         notificationRepository.save(notification);
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
 
+        //create receiver notification
+        List<ReceiverNotification> receiverNotifications = new ArrayList<>();
+
         // send notification that post created
         for (User followUser : followUsers) {
+            receiverNotifications.add(
+                    ReceiverNotification.builder()
+                            .receiverUser(followUser)
+                            .notification(notification)
+                            .build()
+            );
             simpMessagingTemplate.convertAndSendToUser(followUser.getEmail(), "/queue/notifications", notificationResponseDTO);
         }
+        receiverNotificationRepository.saveAll(receiverNotifications);
     }
 
 
@@ -148,6 +159,11 @@ public class SocketPostService {
 
             NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
 
+            ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                    .receiverUser(postCreatedUser)
+                    .notification(notification)
+                    .build();
+            receiverNotificationRepository.save(receiverNotification);
             // send alert to userPost
             simpMessagingTemplate.convertAndSendToUser(postCreatedUser.getEmail(), "/queue/notifications", notificationResponseDTO);
         }
@@ -192,6 +208,12 @@ public class SocketPostService {
                     .post(targetPost)
                     .build();
             notificationRepository.save(notification);
+
+            ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                    .receiverUser(targetCommentUser)
+                    .notification(notification)
+                    .build();
+            receiverNotificationRepository.save(receiverNotification);
 
             NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
             simpMessagingTemplate.convertAndSendToUser(targetCommentUser.getEmail(), "/queue/notifications", notificationResponseDTO);
@@ -268,9 +290,18 @@ public class SocketPostService {
             NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
             List<User> usersInGroup = groupUsers.stream().map(GroupUser::getUser)
                     .toList();
+
+            List<ReceiverNotification> receiverNotifications = new ArrayList<>();
             for (User u : usersInGroup) {
+                receiverNotifications.add(
+                        ReceiverNotification.builder()
+                                .receiverUser(u)
+                                .notification(notification)
+                                .build()
+                );
                 simpMessagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/notifications", notificationResponseDTO);
             }
+            receiverNotificationRepository.saveAll(receiverNotifications);
         } else {
             // if not,user must create upload request to admin
             UploadPostRequest uploadPostRequest = UploadPostRequest.builder()
@@ -320,6 +351,11 @@ public class SocketPostService {
                     .build();
             notificationRepository.save(notification);
             NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+            ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                    .receiverUser(group.getCreatedBy())
+                    .notification(notification)
+                    .build();
+            receiverNotificationRepository.save(receiverNotification);
             simpMessagingTemplate.convertAndSendToUser(group.getCreatedBy().getEmail(), "/queue/notifications", notificationResponseDTO);
         }
     }

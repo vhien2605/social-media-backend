@@ -4,11 +4,13 @@ package com.hien.back_end_app.services;
 import com.hien.back_end_app.dto.response.message.NotificationResponseDTO;
 import com.hien.back_end_app.entities.Follow;
 import com.hien.back_end_app.entities.Notification;
+import com.hien.back_end_app.entities.ReceiverNotification;
 import com.hien.back_end_app.entities.User;
 import com.hien.back_end_app.exceptions.AppException;
 import com.hien.back_end_app.mappers.NotificationMapper;
 import com.hien.back_end_app.repositories.FollowRepository;
 import com.hien.back_end_app.repositories.NotificationRepository;
+import com.hien.back_end_app.repositories.ReceiverNotificationRepository;
 import com.hien.back_end_app.repositories.UserRepository;
 import com.hien.back_end_app.utils.enums.ErrorCode;
 import com.hien.back_end_app.utils.enums.NotificationType;
@@ -26,6 +28,7 @@ public class SocketFollowService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final ReceiverNotificationRepository receiverNotificationRepository;
 
     @Transactional
     public void followTo(Long userId, SimpMessageHeaderAccessor accessor) {
@@ -48,6 +51,12 @@ public class SocketFollowService {
                 .build();
         notificationRepository.save(notification);
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+        ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                .receiverUser(targetUser)
+                .notification(notification)
+                .build();
+        receiverNotificationRepository.save(receiverNotification);
 
         simpMessagingTemplate.convertAndSendToUser(targetUser.getEmail(), "/queue/notifications", notificationResponseDTO);
     }

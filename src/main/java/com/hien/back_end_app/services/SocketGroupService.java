@@ -38,6 +38,7 @@ public class SocketGroupService {
     private final UploadPostRequestRepository uploadPostRequestRepository;
     private final PostRepository postRepository;
     private final PostMediaRepository postMediaRepository;
+    private final ReceiverNotificationRepository receiverNotificationRepository;
 
     @Transactional
     public void addMember(AddMemberRequestDTO dto, SimpMessageHeaderAccessor accessor) {
@@ -76,6 +77,13 @@ public class SocketGroupService {
                 .build();
         notificationRepository.save(notification);
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+        ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                .receiverUser(addedUser)
+                .notification(notification)
+                .build();
+        receiverNotificationRepository.save(receiverNotification);
+
         simpMessagingTemplate.convertAndSendToUser(addedUser.getEmail(), "/queue/notifications", notificationResponseDTO);
     }
 
@@ -116,6 +124,13 @@ public class SocketGroupService {
                 .build();
         notificationRepository.save(notification);
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+        ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                .receiverUser(groupOwnedUser)
+                .notification(notification)
+                .build();
+        receiverNotificationRepository.save(receiverNotification);
+
         simpMessagingTemplate.convertAndSendToUser(groupOwnedUser.getEmail(), "/queue/notifications", notificationResponseDTO);
     }
 
@@ -167,6 +182,12 @@ public class SocketGroupService {
                 .build();
         notificationRepository.save(notification);
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+        ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                .receiverUser(requestUser)
+                .notification(notification)
+                .build();
+        receiverNotificationRepository.save(receiverNotification);
 
         simpMessagingTemplate.convertAndSendToUser(requestUser.getEmail(), "/queue/notifications", notificationResponseDTO);
     }
@@ -232,6 +253,12 @@ public class SocketGroupService {
                 .build();
         notificationRepository.save(notification);
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+        ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                .receiverUser(requestUser)
+                .notification(notification)
+                .build();
+        receiverNotificationRepository.save(receiverNotification);
 
         simpMessagingTemplate.convertAndSendToUser(requestUser.getEmail(), "/queue/notifications", notificationResponseDTO);
     }

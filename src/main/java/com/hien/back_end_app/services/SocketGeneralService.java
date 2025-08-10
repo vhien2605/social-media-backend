@@ -4,10 +4,12 @@ package com.hien.back_end_app.services;
 import com.hien.back_end_app.dto.request.GeneralNotificationRequestDTO;
 import com.hien.back_end_app.dto.response.message.NotificationResponseDTO;
 import com.hien.back_end_app.entities.Notification;
+import com.hien.back_end_app.entities.ReceiverNotification;
 import com.hien.back_end_app.entities.User;
 import com.hien.back_end_app.exceptions.AppException;
 import com.hien.back_end_app.mappers.NotificationMapper;
 import com.hien.back_end_app.repositories.NotificationRepository;
+import com.hien.back_end_app.repositories.ReceiverNotificationRepository;
 import com.hien.back_end_app.repositories.UserRepository;
 import com.hien.back_end_app.utils.enums.ErrorCode;
 import com.hien.back_end_app.utils.enums.NotificationType;
@@ -26,6 +28,7 @@ public class SocketGeneralService {
     private final UserRepository userRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final NotificationMapper notificationMapper;
+    private final ReceiverNotificationRepository receiverNotificationRepository;
 
     public void sendToUser(Long userId, GeneralNotificationRequestDTO dto, SimpMessageHeaderAccessor accessor) {
         log.info("----------------------------------sending to specific user method ran---------------------------------");
@@ -42,8 +45,13 @@ public class SocketGeneralService {
                 .type(NotificationType.GENERAL)
                 .build();
         notificationRepository.save(notification);
-
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+        ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                .receiverUser(receiverUser)
+                .notification(notification)
+                .build();
+        receiverNotificationRepository.save(receiverNotification);
 
         simpMessagingTemplate.convertAndSendToUser(receiverUser.getEmail(), "/queue/notifications", notificationResponseDTO);
     }

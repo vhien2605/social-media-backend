@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/notification")
 @RequiredArgsConstructor
 public class NotificationController {
-
     @PreAuthorize("hasRole('SYS_ADMIN') OR hasAuthority('read_notification')")
     @GetMapping("/all-notifications")
     public ApiResponse manageNotifications(
