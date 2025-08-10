@@ -1,20 +1,24 @@
 package com.hien.back_end_app.dto.response.message;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.hien.back_end_app.dto.response.post.UserRenderResponseDTO;
 import com.hien.back_end_app.utils.enums.NotificationType;
 import com.hien.back_end_app.utils.validators.ZeroFilter;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
+
 
 @Setter
 @Getter
 @Builder
-public class NotificationResponseDTO implements Serializable {
+@NoArgsConstructor
+@AllArgsConstructor
+public class NotificationDetailResponseDTO implements Serializable {
     private long id;
     private String content;
     private NotificationType type;
@@ -40,4 +44,6 @@ public class NotificationResponseDTO implements Serializable {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Ho_Chi_Minh")
     private Date updateAt;
+    
+    private Set<UserRenderResponseDTO> receivers;
 }
