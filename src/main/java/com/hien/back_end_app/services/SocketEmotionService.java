@@ -28,6 +28,7 @@ public class SocketEmotionService {
     private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final CommentRepository commentRepository;
+    private final ReceiverNotificationRepository receiverNotificationRepository;
 
     @Transactional
     public void createPostEmotion(Long postId, EmotionRequestDTO dto, SimpMessageHeaderAccessor accessor) {
@@ -72,6 +73,13 @@ public class SocketEmotionService {
                         .build();
                 notificationRepository.save(notification);
                 NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+                ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                        .receiverUser(ownedPostUser)
+                        .notification(notification)
+                        .build();
+                receiverNotificationRepository.save(receiverNotification);
+
                 simpMessagingTemplate.convertAndSendToUser(ownedPostUser.getEmail(), "/queue/notifications", notificationResponseDTO);
             }
         } else {
@@ -122,6 +130,14 @@ public class SocketEmotionService {
                 notificationRepository.save(notification);
 
                 NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+                ReceiverNotification receiverNotification = ReceiverNotification.builder()
+                        .receiverUser(ownedCommentUser)
+                        .notification(notification)
+                        .build();
+                receiverNotificationRepository.save(receiverNotification);
+
+
                 simpMessagingTemplate.convertAndSendToUser(ownedCommentUser.getEmail(), "/queue/notifications", notificationResponseDTO);
             }
         } else {

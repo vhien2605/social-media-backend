@@ -19,5 +19,6 @@ public class NotificationService {
 
     public PageResponseDTO<Object> getAllNotifications(Pageable pageable) {
         Page<Notification> notifications = notificationRepository.findAll(pageable);
+        return null;
     }
 }

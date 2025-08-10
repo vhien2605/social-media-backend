@@ -7,7 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import javax.naming.Name;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "notification")
@@ -54,4 +55,7 @@ public class Notification extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private Group group;
+
+    @OneToMany(mappedBy = "notification")
+    private Set<ReceiverNotification> receivers;
 }

@@ -37,6 +37,7 @@ public class SocketConversationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
     private final MessageMapper messageMapper;
+    private final ReceiverNotificationRepository receiverNotificationRepository;
     private final MediaMessageMapper mediaMessageMapper;
 
     @Transactional
@@ -117,9 +118,19 @@ public class SocketConversationService {
         participants.add(conversation.getUser());
         Set<User> filteredParticipants = participants.
                 stream().filter(p -> p.getId() != createdUser.getId()).collect(Collectors.toSet());
+
+        List<ReceiverNotification> receiverNotifications = new ArrayList<>();
+
         for (User u : filteredParticipants) {
+            receiverNotifications.add(
+                    ReceiverNotification.builder()
+                            .receiverUser(u)
+                            .notification(notification)
+                            .build()
+            );
             simpMessagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/notifications", notificationResponseDTO);
         }
+        receiverNotificationRepository.saveAll(receiverNotifications);
     }
 
 
@@ -217,6 +228,8 @@ public class SocketConversationService {
 
     @Transactional
     public void createConversation(CreateConversationRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        boolean isGroup = dto.getParticipants().size() > 1;
+
         String name = dto.getName();
         Set<Long> participantIds = dto.getParticipants();
         String email = accessor.getUser().getName();
@@ -227,7 +240,7 @@ public class SocketConversationService {
         Conversation conversation = Conversation.builder()
                 .name(name)
                 .user(createdUser)
-                .isGroup(false)
+                .isGroup(isGroup)
                 .latestMessageTime(new Date())
                 .participants(new HashSet<>(participants))
                 .build();
@@ -254,9 +267,19 @@ public class SocketConversationService {
                 .build();
         notificationRepository.save(notification);
         NotificationResponseDTO notificationResponseDTO = notificationMapper.toDTO(notification);
+
+        List<ReceiverNotification> receiverNotifications = new ArrayList<>();
+
         for (User u : participants) {
+            receiverNotifications.add(
+                    ReceiverNotification.builder()
+                            .receiverUser(u)
+                            .notification(notification)
+                            .build()
+            );
             simpMessagingTemplate.convertAndSendToUser(u.getEmail(), "/queue/notifications", notificationResponseDTO);
         }
+        receiverNotificationRepository.saveAll(receiverNotifications);
     }
 
     @Transactional
