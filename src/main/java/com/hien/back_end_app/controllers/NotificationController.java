@@ -6,6 +6,7 @@ import com.hien.back_end_app.dto.response.ApiSuccessResponse;
 import com.hien.back_end_app.services.NotificationService;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -80,19 +81,25 @@ public class NotificationController {
                 .build();
     }
 
-    public ApiResponse getGeneralNotifications() {
+    @GetMapping("/general-notifications")
+    public ApiResponse getGeneralNotifications(Pageable pageable) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get notifications successfully")
-                .data(null)
+                .data(notificationService.getGeneralNotifications(pageable))
                 .build();
     }
 
-    public ApiResponse getGeneralNotificationsFilter() {
+    @GetMapping("/general-notifications/advanced-filter")
+    public ApiResponse getGeneralNotificationsFilter(
+            Pageable pageable,
+            @RequestParam(required = false) String[] notification,
+            @RequestParam(defaultValue = "id:asc") String[] sortBy
+    ) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get notifications successfully")
-                .data(null)
+                .data(notificationService.getGeneralNotificationsFilter(pageable, notification, sortBy))
                 .build();
     }
 }

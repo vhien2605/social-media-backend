@@ -1,6 +1,7 @@
 package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.Notification;
+import com.hien.back_end_app.utils.enums.NotificationType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -63,4 +64,18 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     @Override
     Page<Notification> findAll(Specification<Notification> spec, Pageable pageable);
+
+
+    @Query("""
+            SELECT n FROM Notification n
+            JOIN FETCH n.createdBy
+            LEFT JOIN FETCH n.post
+            LEFT JOIN FETCH n.comment
+            LEFT JOIN FETCH n.emotion
+            LEFT JOIN FETCH n.group
+            LEFT JOIN FETCH n.conversation
+            WHERE n.type=:type
+            ORDER BY n.createAt DESC
+            """)
+    Page<Notification> findGenerals(@Param("type") NotificationType type, Pageable pageable);
 }

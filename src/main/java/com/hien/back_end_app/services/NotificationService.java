@@ -14,6 +14,7 @@ import com.hien.back_end_app.repositories.specification.SpecificationBuilder;
 import com.hien.back_end_app.utils.commons.AppConst;
 import com.hien.back_end_app.utils.commons.GlobalMethod;
 import com.hien.back_end_app.utils.enums.ErrorCode;
+import com.hien.back_end_app.utils.enums.NotificationType;
 import com.hien.back_end_app.utils.enums.PostType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -184,4 +185,62 @@ public class NotificationService {
                 .toList();
         return dtos;
     }
+
+    public PageResponseDTO<Object> getGeneralNotifications(Pageable pageable) {
+        Page<Notification> notifications = notificationRepository.findGenerals(NotificationType.GENERAL, pageable);
+        List<NotificationResponseDTO> dtos = fromPageResultToDTOResult(notifications);
+        return PageResponseDTO.builder()
+                .totalPage(notifications.getTotalPages())
+                .pageSize(pageable.getPageSize())
+                .pageNo(pageable.getPageNumber())
+                .data(dtos)
+                .build();
+    }
+
+
+    public PageResponseDTO<Object> getGeneralNotificationsFilter(Pageable pageable, String[] notification, String[] sortBy) {
+        SpecificationBuilder<Notification> builder = new SpecificationBuilder<>();
+        Pattern pattern = Pattern.compile(AppConst.SEARCH_SPEC_OPERATOR);
+        Pattern sortPattern = Pattern.compile(AppConst.SORT_BY);
+
+        // loop other predicate
+        // add predicate its notificationType is GENERAL
+        builder.with(null, "type", ":", NotificationType.GENERAL, null, null);
+        for (String s : notification) {
+            Matcher matcher = pattern.matcher(s);
+            if (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(3),
+                        matcher.group(4), matcher.group(5), matcher.group(6));
+            }
+        }
+        Specification<Notification> specification = builder.build();
+
+        // add sort by createAt desc
+        List<Sort.Order> sortOrders = new ArrayList<>();
+        sortOrders.add(new Sort.Order(Sort.Direction.DESC, "createAt"));
+        for (String sb : sortBy) {
+            Matcher sortMatcher = sortPattern.matcher(sb);
+            if (sortMatcher.find()) {
+                String field = sortMatcher.group(1);
+                String value = sortMatcher.group(3);
+                Sort.Direction direction = (value.equalsIgnoreCase("ASC")) ? Sort.Direction.ASC : Sort.Direction.DESC;
+                sortOrders.add(new Sort.Order(direction, field));
+            }
+        }
+
+        Sort sort = Sort.by(sortOrders);
+        // insert sort property into pageable
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort);
+
+        Page<Notification> notifications = notificationRepository.findAll(specification, sortedPageable);
+        return PageResponseDTO.builder()
+                .pageSize(pageable.getPageSize())
+                .pageNo(pageable.getPageNumber())
+                .data(fromPageResultToDTOResult(notifications))
+                .totalPage(notifications.getTotalPages())
+                .build();
+    }
+
 }
