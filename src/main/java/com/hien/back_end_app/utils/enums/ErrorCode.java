@@ -38,7 +38,8 @@ public enum ErrorCode {
     TOKEN_BLACK_LIST(401, "token is in black list, check other tokens again", HttpStatus.BAD_REQUEST),
     USER_EXISTED(400, "user has already existed", HttpStatus.BAD_REQUEST),
     JSON_INVALID(400, "json is invalid", HttpStatus.BAD_REQUEST),
-    ALBUM_EXISTED(400, "album title is existed,select other names", HttpStatus.BAD_REQUEST);
+    ALBUM_EXISTED(400, "album title is existed,select other names", HttpStatus.BAD_REQUEST),
+    SAVED_NOTIFICATION_NOT_EXIST(400, "notification not exist", HttpStatus.BAD_REQUEST);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

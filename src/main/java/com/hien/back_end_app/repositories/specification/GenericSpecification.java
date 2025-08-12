@@ -1,10 +1,12 @@
 package com.hien.back_end_app.repositories.specification;
 
 import com.hien.back_end_app.entities.Conversation;
+import com.hien.back_end_app.entities.ReceiverNotification;
 import com.hien.back_end_app.entities.User;
 import jakarta.persistence.criteria.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.engine.transaction.jta.platform.internal.JOnASJtaPlatform;
 import org.hibernate.validator.constraints.ru.INN;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -30,6 +32,10 @@ public class GenericSpecification<T extends SupportsSpecification> implements Sp
         } else if (criteria.getKey().equalsIgnoreCase("createdEmail")) {
             Join<T, User> join = root.join("createdBy", JoinType.INNER);
             return buildJoinEmailCreatedUserFromPost(join, query, criteriaBuilder);
+        } else if (criteria.getKey().equalsIgnoreCase("emailNotificationReceiver")) {
+            Join<T, ReceiverNotification> notificationJoin = root.join("receivers", JoinType.INNER);
+            Join<ReceiverNotification, User> userJoin = notificationJoin.join("receiverUser", JoinType.INNER);
+            return buildJoinEmailNotificationReceiver(userJoin, query, criteriaBuilder);
         }
         return buildNormalPredicate(root, query, criteriaBuilder);
     }
@@ -78,6 +84,10 @@ public class GenericSpecification<T extends SupportsSpecification> implements Sp
     }
 
     private Predicate buildJoinEmailCreatedUserFromPost(Join<T, ?> join, CriteriaQuery<?> query, CriteriaBuilder builder) {
+        return builder.equal(join.get("email"), criteria.getValue());
+    }
+
+    private Predicate buildJoinEmailNotificationReceiver(Join<ReceiverNotification, User> join, CriteriaQuery<?> query, CriteriaBuilder builder) {
         return builder.equal(join.get("email"), criteria.getValue());
     }
 }
