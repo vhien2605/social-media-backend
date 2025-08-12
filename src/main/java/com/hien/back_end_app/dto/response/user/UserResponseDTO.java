@@ -1,5 +1,6 @@
 package com.hien.back_end_app.dto.response.user;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.hien.back_end_app.dto.response.authority.RoleResponseDTO;
 import com.hien.back_end_app.entities.Role;
 import com.hien.back_end_app.utils.enums.AuthProvider;
@@ -23,6 +24,7 @@ public class UserResponseDTO implements Serializable {
     private UserStatus userStatus;
     private String fullName;
     private String imageUrl;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date dateOfBirth;
     private String address;
     private String education;

@@ -101,18 +101,20 @@ public class UserService {
         long userId = dto.getUserId();
         User user = userRepository.findByIdWithRoles(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
         // set avatar
-        if (image != null) {
-            try {
-                String urlImage = fileService.uploadFile(image.getBytes(), fileService.getFileExtension(image), Objects.requireNonNull(image.getContentType()), "avatar");
-                user.setImageUrl(urlImage);
-            } catch (IOException e) {
-                throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+        if (user.getAuthProvider().equals(AuthProvider.STANDARD)) {
+            if (image != null) {
+                try {
+                    String urlImage = fileService.uploadFile(image.getBytes(), fileService.getFileExtension(image), Objects.requireNonNull(image.getContentType()), "avatar");
+                    user.setImageUrl(urlImage);
+                } catch (IOException e) {
+                    throw new AppException(ErrorCode.UPLOAD_FILE_FAILED);
+                }
             }
         }
-
-        user.setFullName(dto.getFullName());
+        if (user.getAuthProvider().equals(AuthProvider.STANDARD)) {
+            user.setFullName(dto.getFullName());
+        }
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setAddress(dto.getAddress());
         user.setEducation(dto.getEducation());
