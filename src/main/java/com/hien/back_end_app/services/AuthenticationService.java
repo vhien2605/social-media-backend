@@ -130,6 +130,11 @@ public class AuthenticationService {
         String email = jwtService.extractUsername(accessToken);
         User user = userRepository.findByEmailWithNoReferences(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (!user.getAuthProvider().equals(AuthProvider.STANDARD)) {
+            throw new AppException(ErrorCode.OAuth2InvalidProvider);
+        }
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return "Changed new password";
@@ -141,6 +146,11 @@ public class AuthenticationService {
         // but for simply, send to rest
         User user = userRepository.findByEmail(registerEmail)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        if (!user.getAuthProvider().equals(AuthProvider.STANDARD)) {
+            throw new AppException(ErrorCode.OAuth2InvalidProvider);
+        }
+
         String resetToken = jwtService.generateToken(user, TokenType.RESET);
 
         return ResetResponseDTO.builder()
