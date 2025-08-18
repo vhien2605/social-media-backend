@@ -15,6 +15,7 @@ import com.hien.back_end_app.repositories.RoleRepository;
 import com.hien.back_end_app.repositories.UserRepository;
 import com.hien.back_end_app.utils.enums.AuthProvider;
 import com.hien.back_end_app.utils.enums.ErrorCode;
+import com.hien.back_end_app.utils.enums.MailTemplateType;
 import com.hien.back_end_app.utils.enums.TokenType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +34,7 @@ public class AuthenticationService {
     private final RedisTokenService redisTokenService;
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
+    private final EmailService emailService;
 
 
     public JwtResponseDTO login(LoginStandardRequestDTO dto) {
@@ -104,6 +106,7 @@ public class AuthenticationService {
         user.setRoles(Set.of(role));
         userRepository.save(user);
         // send mail thank you
+        emailService.sendMessage("hvu6582@gmail.com", email, MailTemplateType.ACCOUNT_REGISTRATION, null);
         return userMapper.toDTO(user);
     }
 
@@ -137,6 +140,7 @@ public class AuthenticationService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        emailService.sendMessage("hvu6582@gmail.com", email, MailTemplateType.PASSWORD_RESET, null);
         return "Changed new password";
     }
 
@@ -166,6 +170,7 @@ public class AuthenticationService {
         boolean isUserExist = userRepository.existsByEmail(email);
         if (isUserExist) {
             userRepository.updatePasswordByEmail(email, passwordEncoder.encode(resetPassword));
+            emailService.sendMessage("hvu6582@gmail.com", email, MailTemplateType.PASSWORD_RESET, null);
         }
         return "reset password";
     }
