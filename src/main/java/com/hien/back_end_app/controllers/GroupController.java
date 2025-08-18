@@ -55,4 +55,15 @@ public class GroupController {
                 .data(groupService.joinRequests(groupId, pageable))
                 .build();
     }
+
+    @PostMapping("/leave-group/{groupId}")
+    public ApiResponse leaveGroup(
+            @PathVariable @Min(value = 0, message = "group id must not be negative") Long groupId
+    ) {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("leave group successfully")
+                .data(groupService.leaveGroup(groupId))
+                .build();
+    }
 }

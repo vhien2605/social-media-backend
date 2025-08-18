@@ -2,10 +2,12 @@ package com.hien.back_end_app.repositories;
 
 import com.hien.back_end_app.entities.GroupUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,4 +33,14 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
             WHERE g.id=:id
             """)
     public List<GroupUser> findAllByGroupId(@Param("id") Long groupId);
+
+
+    @Query("""
+            DELETE FROM GroupUser gu
+            WHERE gu.user.id=:userId
+            AND gu.group.id=:groupId
+            """)
+    @Modifying
+    @Transactional
+    public void deleteByUserIdAndGroupId(@Param("userId") Long userId, @Param("groupId") Long groupId);
 }

@@ -17,6 +17,7 @@ import com.hien.back_end_app.repositories.*;
 import com.hien.back_end_app.utils.commons.GlobalMethod;
 import com.hien.back_end_app.utils.enums.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -140,5 +141,15 @@ public class GroupService {
                 .totalPage(joinGroupRequests.getTotalPages())
                 .data(dtos)
                 .build();
+    }
+
+
+    public String leaveGroup(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new AppException(ErrorCode.GROUP_NOT_EXIST));
+        User user = userRepository.findByEmailWithNoReferences(GlobalMethod.extractEmailFromContext())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        groupUserRepository.deleteByUserIdAndGroupId(user.getId(), groupId);
+        return "left group";
     }
 }
