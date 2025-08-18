@@ -58,3 +58,7 @@ cloudinary:
   apiKey: ${cloudinary.api_key}
   secretKey: ${cloudinary.api_secret}
 
+mail:
+  sender:
+    username: ${mail.username}
+    password: ${mail.password}
