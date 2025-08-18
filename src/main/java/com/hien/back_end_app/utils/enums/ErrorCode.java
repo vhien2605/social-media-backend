@@ -38,7 +38,8 @@ public enum ErrorCode {
     TOKEN_BLACK_LIST(401, "token is in black list, check other tokens again", HttpStatus.BAD_REQUEST),
     USER_EXISTED(400, "user has already existed", HttpStatus.BAD_REQUEST),
     JSON_INVALID(400, "json is invalid", HttpStatus.BAD_REQUEST),
-    ALBUM_EXISTED(400, "album title is existed,select other names", HttpStatus.BAD_REQUEST);
+    ALBUM_EXISTED(400, "album title is existed,select other names", HttpStatus.BAD_REQUEST),
+    CREATOR_REQUIRED(400, "creator of conversation is required,you can't leave the conversation while holding this role", HttpStatus.BAD_REQUEST);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

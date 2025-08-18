@@ -54,4 +54,20 @@ public class SocketConversationController {
             , SimpMessageHeaderAccessor accessor) {
         webSocketService.changeConversationName(conversationId, dto, accessor);
     }
+
+    @MessageMapping("/message/conversation/{conversationId}/leave")
+    public void leaveFromConversation(
+            @DestinationVariable @Min(value = 0, message = "conversationId must not be negative") Long conversationId,
+            SimpMessageHeaderAccessor accessor
+    ) {
+        webSocketService.leaveConversation(conversationId, accessor);
+    }
+
+    @MessageMapping("/message/conversation/delegate-created-role")
+    public void delegateCreatedRole(
+            @Valid DelegateCreatedRoleRequestDTO dto,
+            SimpMessageHeaderAccessor accessor
+    ) {
+        webSocketService.delegateCreatedRole(dto, accessor);
+    }
 }
