@@ -39,6 +39,7 @@ public enum ErrorCode {
     USER_EXISTED(400, "user has already existed", HttpStatus.BAD_REQUEST),
     JSON_INVALID(400, "json is invalid", HttpStatus.BAD_REQUEST),
     ALBUM_EXISTED(400, "album title is existed,select other names", HttpStatus.BAD_REQUEST),
+    CREATOR_REQUIRED(400, "creator of conversation is required,you can't leave the conversation while holding this role", HttpStatus.BAD_REQUEST),
     SAVED_NOTIFICATION_NOT_EXIST(400, "notification not exist", HttpStatus.BAD_REQUEST),
     MAIL_SERVER_ERROR(500, "mail server is not available now, please call api later", HttpStatus.INTERNAL_SERVER_ERROR);
     private final int code;

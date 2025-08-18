@@ -332,4 +332,77 @@ public class SocketConversationService {
         MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
         simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversation.getId(), messageResponseDTO);
     }
+
+
+    @Transactional
+    public void leaveConversation(Long conversationId, SimpMessageHeaderAccessor accessor) {
+        Conversation conversation = conversationRepository.findConversationByIdWithCreatedUserAndParticipants(conversationId)
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        conversation.setLatestMessageTime(new Date());
+
+        String email = accessor.getUser().getName();
+        User leaveUser = userRepository.findByEmailWithNoReferences(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        if (conversation.getUser().getId() == leaveUser.getId()) {
+            throw new AppException(ErrorCode.CREATOR_REQUIRED);
+        }
+        Set<User> newParticipants = conversation.getParticipants().stream()
+                .filter(p -> p.getId() != leaveUser.getId()).collect(Collectors.toSet());
+
+
+        if (newParticipants.isEmpty()) {
+            conversationRepository.deleteById(conversationId);
+            return;
+        }
+
+        conversation.setParticipants(newParticipants);
+        conversationRepository.save(conversation);
+        // create message for presented participants;
+        Message message = Message.builder()
+                .conversation(conversation)
+                .sourceUser(leaveUser)
+                .content(leaveUser.getFullName() + " left the conversation")
+                .build();
+        messageRepository.save(message);
+        MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+
+        simpMessagingTemplate.convertAndSend("/topic/conversation/" + conversationId, messageResponseDTO);
+    }
+
+    @Transactional
+    public void delegateCreatedRole(DelegateCreatedRoleRequestDTO dto, SimpMessageHeaderAccessor accessor) {
+        String email = accessor.getUser().getName();
+        Conversation conversation = conversationRepository.findConversationByIdWithCreatedUserAndParticipants(dto.getConversationId())
+                .orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
+        User ownedUser = userRepository.findByEmailWithNoReferences(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        if (ownedUser.getId() != conversation.getUser().getId()) {
+            throw new AppException(ErrorCode.ACCESS_DENIED);
+        }
+        User targetUser = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        conversation.setUser(targetUser);
+        Set<User> participants = conversation.getParticipants();
+
+        // if user not present in conversation, throw error
+        if (participants.stream().noneMatch(p -> p.getId() == targetUser.getId())) {
+            throw new AppException(ErrorCode.USER_NOT_HAVE_CONVERSATION);
+        }
+        Set<User> newParticipants = participants.stream().filter(p -> p.getId() != targetUser.getId()).collect(Collectors.toSet());
+        newParticipants.add(ownedUser);
+        conversation.setParticipants(newParticipants);
+
+        conversationRepository.save(conversation);
+
+        // create message for presented participants;
+        Message message = Message.builder()
+                .conversation(conversation)
+                .sourceUser(ownedUser)
+                .content(ownedUser.getFullName() + " delegate admin role for " + targetUser.getFullName())
+                .build();
+        messageRepository.save(message);
+        MessageResponseDTO messageResponseDTO = messageMapper.toDTO(message);
+
+        simpMessagingTemplate.convertAndSend("/topic/conversation/" + dto.getConversationId(), messageResponseDTO);
+    }
 }
