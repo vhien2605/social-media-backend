@@ -17,7 +17,7 @@ public enum ErrorCode {
     TOKEN_DISABLED(401, "given token is disable by logged out", HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(401, "given token is expired", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(400, "can't find any user with given input", HttpStatus.BAD_REQUEST),
-    UNAUTHORIZED(401, "user unathorized", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(401, "user unauthorized", HttpStatus.UNAUTHORIZED),
     ACCESS_DENIED(403, "you are not allowed to do this action", HttpStatus.FORBIDDEN),
     AUTHORITY_TYPE_INVALID(400, "authority type is invalid, try again", HttpStatus.BAD_REQUEST),
     PERMISSION_NOT_EXIST(400, "permission not existed", HttpStatus.BAD_REQUEST),
@@ -25,7 +25,7 @@ public enum ErrorCode {
     ROLE_NOT_EXIST(400, "role is not exist", HttpStatus.BAD_REQUEST),
     ROLE_EXIST(400, "role is existed", HttpStatus.BAD_REQUEST),
     REGEX_INVALID(400, "regex is invalid", HttpStatus.BAD_REQUEST),
-    USER_NOT_SUBSCRIBE(400, "user dont subrice this port", HttpStatus.BAD_REQUEST),
+    USER_NOT_SUBSCRIBE(400, "user don't subscribe this port", HttpStatus.BAD_REQUEST),
     USER_NOT_HAVE_CONVERSATION(400, "user not have conversation", HttpStatus.BAD_REQUEST),
     CONVERSATION_NOT_EXIST(400, "conversation is not exist", HttpStatus.BAD_REQUEST),
     UPLOAD_FILE_FAILED(503, "service unavailable", HttpStatus.SERVICE_UNAVAILABLE),
@@ -39,7 +39,10 @@ public enum ErrorCode {
     USER_EXISTED(400, "user has already existed", HttpStatus.BAD_REQUEST),
     JSON_INVALID(400, "json is invalid", HttpStatus.BAD_REQUEST),
     ALBUM_EXISTED(400, "album title is existed,select other names", HttpStatus.BAD_REQUEST),
-    CREATOR_REQUIRED(400, "creator of conversation is required,you can't leave the conversation while holding this role", HttpStatus.BAD_REQUEST);
+    CREATOR_REQUIRED(400, "creator of conversation is required,you can't leave the conversation while holding this role", HttpStatus.BAD_REQUEST),
+    ALBUM_EXISTED(400, "album title is existed,select other names", HttpStatus.BAD_REQUEST),
+    SAVED_NOTIFICATION_NOT_EXIST(400, "notification not exist", HttpStatus.BAD_REQUEST),
+    MAIL_SERVER_ERROR(500, "mail server is not available now, please call api later", HttpStatus.INTERNAL_SERVER_ERROR);
     private final int code;
     private final String message;
     private final HttpStatus httpStatus;

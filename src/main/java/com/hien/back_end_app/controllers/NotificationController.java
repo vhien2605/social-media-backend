@@ -3,18 +3,19 @@ package com.hien.back_end_app.controllers;
 
 import com.hien.back_end_app.dto.response.ApiResponse;
 import com.hien.back_end_app.dto.response.ApiSuccessResponse;
+import com.hien.back_end_app.services.NotificationService;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/notification")
 @RequiredArgsConstructor
 public class NotificationController {
+    private final NotificationService notificationService;
 
     @PreAuthorize("hasRole('SYS_ADMIN') OR hasAuthority('read_notification')")
     @GetMapping("/all-notifications")
@@ -24,12 +25,25 @@ public class NotificationController {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get notifications successfully")
-                .data(null)
+                .data(notificationService.getAllNotifications(pageable))
+                .build();
+    }
+
+    @PreAuthorize("hasRole('SYS_ADMIN') OR hasAuthority('read_notification')")
+    @GetMapping("/detail/{notificationId}")
+    public ApiResponse seeDetailNotification(
+            @PathVariable @Min(value = 0, message = "notificationId must not be negative") Long notificationId
+    ) {
+        return ApiSuccessResponse.builder()
+                .status(200)
+                .message("get notification detail successfully")
+                .data(notificationService.seeDetail(notificationId))
                 .build();
     }
 
 
     @PreAuthorize("hasRole('SYS_ADMIN') OR hasAuthority('read_notification')")
+    @GetMapping("/all-notifications/advanced-filter")
     public ApiResponse getNotificationsFilter(
             Pageable pageable,
             @RequestParam(required = false) String[] notification,
@@ -39,39 +53,53 @@ public class NotificationController {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get notifications successfully")
-                .data(null)
+                .data(notificationService.getAllNotificationsFilter(pageable, notification, sortBy))
                 .build();
     }
 
-    public ApiResponse getMyNotifications() {
+    @GetMapping("/my-notifications")
+    public ApiResponse getMyNotifications(
+            Pageable pageable
+    ) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get notifications successfully")
-                .data(null)
+                .data(notificationService.getMyNotifications(pageable))
                 .build();
     }
 
-    public ApiResponse getMyNotificationsFilter() {
+    @GetMapping("/my-notifications/advanced-filter")
+    public ApiResponse getMyNotificationsFilter(
+            Pageable pageable,
+            @RequestParam(required = false) String[] notification,
+            @RequestParam(defaultValue = "id:asc") String[] sortBy
+    ) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get notifications successfully")
-                .data(null)
+                .data(notificationService.getMyNotificationsFilter(pageable, notification, sortBy))
                 .build();
     }
 
-    public ApiResponse getGeneralNotifications() {
+    @GetMapping("/general-notifications")
+    public ApiResponse getGeneralNotifications(Pageable pageable) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get notifications successfully")
-                .data(null)
+                .data(notificationService.getGeneralNotifications(pageable))
                 .build();
     }
 
-    public ApiResponse getGeneralNotificationsFilter() {
+    @GetMapping("/general-notifications/advanced-filter")
+    public ApiResponse getGeneralNotificationsFilter(
+            Pageable pageable,
+            @RequestParam(required = false) String[] notification,
+            @RequestParam(defaultValue = "id:asc") String[] sortBy
+    ) {
         return ApiSuccessResponse.builder()
                 .status(200)
                 .message("get notifications successfully")
-                .data(null)
+                .data(notificationService.getGeneralNotificationsFilter(pageable, notification, sortBy))
                 .build();
     }
 }

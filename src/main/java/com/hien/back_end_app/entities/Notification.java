@@ -1,13 +1,15 @@
 package com.hien.back_end_app.entities;
 
 
+import com.hien.back_end_app.repositories.specification.SupportsSpecification;
 import com.hien.back_end_app.utils.enums.NotificationType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import javax.naming.Name;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "notification")
@@ -16,7 +18,7 @@ import javax.naming.Name;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notification extends AbstractEntity {
+public class Notification extends AbstractEntity implements SupportsSpecification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -54,4 +56,7 @@ public class Notification extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private Group group;
+
+    @OneToMany(mappedBy = "notification")
+    private Set<ReceiverNotification> receivers;
 }

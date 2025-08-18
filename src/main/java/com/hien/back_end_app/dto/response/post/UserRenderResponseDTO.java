@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @Builder
-public class UserRenderPostResponseDTO {
+public class UserRenderResponseDTO {
     private long id;
     private String fullName;
     private String imageUrl;
