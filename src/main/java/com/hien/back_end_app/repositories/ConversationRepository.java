@@ -85,7 +85,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
 
     @Query("""
-            SELECT C FROM Conversation c
+            SELECT c FROM Conversation c
             JOIN FETCH c.user
             JOIN FETCH c.participants
             WHERE c.id=:id
@@ -94,7 +94,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
 
     @Query("""
-            SELECT C FROM Conversation c
+            SELECT c FROM Conversation c
             JOIN FETCH c.user
             WHERE c.id=:id
             """)

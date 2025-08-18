@@ -388,9 +388,9 @@ public class SocketConversationService {
         if (participants.stream().noneMatch(p -> p.getId() == targetUser.getId())) {
             throw new AppException(ErrorCode.USER_NOT_HAVE_CONVERSATION);
         }
-        participants.stream().filter(p -> p.getId() != targetUser.getId()).collect(Collectors.toSet());
-        participants.add(ownedUser);
-        conversation.setParticipants(participants);
+        Set<User> newParticipants = participants.stream().filter(p -> p.getId() != targetUser.getId()).collect(Collectors.toSet());
+        newParticipants.add(ownedUser);
+        conversation.setParticipants(newParticipants);
 
         conversationRepository.save(conversation);
 
