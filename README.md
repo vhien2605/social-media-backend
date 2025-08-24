@@ -49,6 +49,7 @@ Set up all your properties as my one and create a `.env` file follow by below pr
 - redisPort=redis port
 - mail.username=your username 
 - mail.password=mail application password
+
 ***Generate application password that used for JavaMail service at https://myaccount.google.com/apppasswords***
 
 
