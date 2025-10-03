@@ -1,64 +1,6 @@
 spring:
   application:
     name: back_end_app
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            clientId: ${oauth2.client.google.client-id}
-            clientSecret: ${oauth2.client.google.client-secret}
-            redirectUri: "{baseUrl}/oauth2/callback/google"
-            scope:
-              - email
-              - profile
-          facebook:
-            clientId: ${oauth2.client.facebook.client-id}
-            clientSecret: ${oauth2.client.facebook.client-secret}
-            redirectUri: "{baseUrl}/oauth2/callback/facebook"
-            scope:
-              - email
-              - public_profile
-  datasource:
-    url: ${databaseUrl}
-    username: ${databaseUsername}
-    password: ${databasePassword}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-  sql:
-    init-mode: always
-  database:
-    redis:
-      host: ${redisHost}
-      password: ${redisPassword}
-      port: ${redisPort}
-
-security:
-  jwt:
-    access:
-      timeout: 155 #minute
-      secretKey: ${jwt.access.key}
-    refresh:
-      timeout: 1 #month
-      secretKey: ${jwt.refresh.key}
-    reset:
-      timeout: 155 #minute
-      secretKey: ${jwt.reset.key}
-
-logging:
-  level:
-    org.springframework.messaging: DEBUG
-    org.springframework.web.socket: DEBUG
-
-cloudinary:
-  name: ${cloudinary.name}
-  apiKey: ${cloudinary.api_key}
-  secretKey: ${cloudinary.api_secret}
-
-mail:
-  sender:
-    username: ${mail.username}
-    password: ${mail.password}
+  profiles:
+    active: dev
+#    set default env is dev

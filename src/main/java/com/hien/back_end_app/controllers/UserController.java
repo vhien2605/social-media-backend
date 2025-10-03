@@ -53,6 +53,7 @@ public class UserController {
     }
 
     @PatchMapping("/update")
+    @PreAuthorize("hasRole('SYS_ADMIN')")
     public ApiResponse updateUser(
             @RequestParam(name = "image", required = false) MultipartFile image,
             @RequestParam(name = "data") String dto) {

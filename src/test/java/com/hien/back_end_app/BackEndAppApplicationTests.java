@@ -5,10 +5,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class BackEndAppApplicationTests {
-
     @Test
     void contextLoads() {
 
     }
-
 }

@@ -1,0 +1,60 @@
+#spring.jpa.defer-datasource-initialization=true
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: ${oauth2.client.google.client-id}
+            clientSecret: ${oauth2.client.google.client-secret}
+            redirectUri: "{baseUrl}/oauth2/callback/google"
+            scope:
+              - email
+              - profile
+          facebook:
+            clientId: ${oauth2.client.facebook.client-id}
+            clientSecret: ${oauth2.client.facebook.client-secret}
+            redirectUri: "{baseUrl}/oauth2/callback/facebook"
+            scope:
+              - email
+              - public_profile
+  datasource:
+    url: jdbc:h2:mem:public
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true
+  sql:
+    init-mode: always
+  database:
+    redis:
+      host: ${redisHost}
+      password: ${redisPassword}
+      port: ${redisPort}
+security:
+  jwt:
+    access:
+      timeout: 155 #minute
+      secretKey: ${jwt.access.key}
+    refresh:
+      timeout: 1 #month
+      secretKey: ${jwt.refresh.key}
+    reset:
+      timeout: 155 #minute
+      secretKey: ${jwt.reset.key}
+logging:
+  level:
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
+cloudinary:
+  name: ${cloudinary.name}
+  apiKey: ${cloudinary.api_key}
+  secretKey: ${cloudinary.api_secret}
+mail:
+  sender:
+    username: ${mail.username}
+    password: ${mail.password}
