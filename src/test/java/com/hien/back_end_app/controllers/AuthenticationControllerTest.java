@@ -11,6 +11,7 @@ import com.hien.back_end_app.exceptions.AppException;
 import com.hien.back_end_app.services.AuthenticationService;
 import com.hien.back_end_app.services.JwtService;
 import com.hien.back_end_app.utils.enums.ErrorCode;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ public class AuthenticationControllerTest {
     private JwtService jwtService;
 
     @Test
+    @DisplayName("login success")
     public void loginTest() throws Exception {
         Mockito.when(authenticationService.login(Mockito.any(LoginStandardRequestDTO.class)))
                 .thenReturn(JwtResponseDTO.builder()
@@ -61,6 +63,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
+    @DisplayName("login failure")
     public void loginFailureTest() throws Exception {
         Mockito.when(authenticationService.login(Mockito.any(LoginStandardRequestDTO.class)))
                 .thenThrow(new AppException(ErrorCode.UNAUTHORIZED));
@@ -82,6 +85,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
+    @DisplayName("register")
     public void registerTest() throws Exception {
         Mockito.when(authenticationService.register(Mockito.any(RegisterRequestDTO.class)))
                 .thenReturn(UserResponseDTO.builder()
@@ -109,6 +113,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
+    @DisplayName("refresh token")
     public void refreshTokenTest() throws Exception {
         Mockito.when(authenticationService.refresh(Mockito.any(RefreshRequestDTO.class)))
                 .thenReturn(JwtResponseDTO.builder()
