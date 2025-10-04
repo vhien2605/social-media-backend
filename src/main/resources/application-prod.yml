@@ -29,8 +29,8 @@ spring:
     show-sql: true
     defer-datasource-initialization: true
   sql:
-    init-mode: always
     init:
+      mode: always
       data-locations: classpath:data-${spring.profiles.active}.sql
   database:
     redis:
