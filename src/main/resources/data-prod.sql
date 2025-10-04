@@ -32,26 +32,23 @@ SELECT 9, NULL, NULL, 'read_product' WHERE NOT EXISTS (SELECT 1 FROM permission 
 INSERT INTO permission (id, create_at, update_at, name)
 SELECT 10, NULL, NULL, 'create_product' WHERE NOT EXISTS (SELECT 1 FROM permission WHERE id = 10);
 
-
 -- ======================
 -- ROLES
 -- ======================
 
 INSERT INTO role (id, create_at, update_at, name)
 SELECT 1, NULL, NULL, 'USER' WHERE NOT EXISTS (SELECT 1 FROM role WHERE id = 1);
-
 INSERT INTO role (id, create_at, update_at, name)
 SELECT 2, NULL, NULL, 'GROUP_ADMIN' WHERE NOT EXISTS (SELECT 1 FROM role WHERE id = 2);
-
 INSERT INTO role (id, create_at, update_at, name)
 SELECT 3, NULL, NULL, 'GROUP_USER' WHERE NOT EXISTS (SELECT 1 FROM role WHERE id = 3);
-
 INSERT INTO role (id, create_at, update_at, name)
 SELECT 4, NULL, NULL, 'SYS_ADMIN' WHERE NOT EXISTS (SELECT 1 FROM role WHERE id = 4);
 
 -- ======================
 -- ADMIN USER
 -- ======================
+
 INSERT INTO usr (
     address,
     auth_provider,
