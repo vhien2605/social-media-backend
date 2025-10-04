@@ -1,7 +1,6 @@
 -- ======================
 -- PERMISSIONS
 -- ======================
-
 INSERT INTO permission (id, create_at, update_at, name)
 SELECT 1, NULL, NULL, 'read_user' WHERE NOT EXISTS (SELECT 1 FROM permission WHERE id = 1);
 
