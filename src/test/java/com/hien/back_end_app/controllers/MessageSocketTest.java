@@ -1,4 +1,12 @@
 package com.hien.back_end_app.controllers;
 
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class MessageSocketTest {
+    
 }

@@ -45,6 +45,7 @@ public class SocketConversationService {
         if (request.getContent().isEmpty()) {
             return;
         }
+
         // check conversation
         Conversation conversation = conversationRepository.findByIdWithUserCreatedAndParticipants(conversationId).
                 orElseThrow(() -> new AppException(ErrorCode.CONVERSATION_NOT_EXIST));
