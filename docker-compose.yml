@@ -1,0 +1,30 @@
+services:
+  social-media-service:
+    build: .
+    image: social-media-service-image
+    container_name: social-media-service-container-410
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+    restart: on-failure
+    networks:
+      - social-media-backend
+  mysql:
+    image: mysql:8
+    container_name: mysql-container-410
+    env_file:
+      - .env
+    networks:
+      - social-media-backend
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis-container-410
+    env_file:
+      - .env
+    networks:
+      - social-media-backend
+networks:
+  social-media-backend:
+    name: social-media-backend
+    driver: bridge
