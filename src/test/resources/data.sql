@@ -44,12 +44,14 @@ SELECT 4, NULL, NULL, 'SYS_ADMIN'
 WHERE NOT EXISTS (SELECT 1 FROM role WHERE id = 4);
 
 --insert admin user
+-- Insert admin user (ignore if exists)
 INSERT IGNORE INTO `usr` (
     id,
     address,
     auth_provider,
     date_of_birth,
     education,
+    email,
     full_name,
     image_url,
     password,
@@ -60,21 +62,23 @@ INSERT IGNORE INTO `usr` (
     update_at,
     gender
 ) VALUES (
-    8,
-    'Nam Định',
-    'GOOGLE',
-    '2005-10-02 07:00:00.000000',
-    'Đại học Công Nghệ',
+    1,
+    'asasd',
+    'STANDARD',
+    '2005-02-03 00:00:00',
+    'sad',
+    'hvu6582@gmail.com',
     'Minh Hiến Vũ',
-    'https://sample/avatar',
-    NULL,
+    'https://lh3.googleusercontent.com/a/ACg8ocJAonabm0ZRj3S8diVF_K3nrS6wF06C5NKhTooLi7piaRBzIw=s96-c',
+    '$2a$10$t57F0BQCUeyePPAanxw3/OwCjtDAgD4Qejxavm/USimM47.49y2iO',
     '111510411124161790461',
-    'ONLINE',
-    'backend engineer',
-    '2025-08-12 23:34:49.382000',
-    '2025-08-12 23:52:21.188000',
+    'OFFLINE',
+    'asddas',
+    '2025-07-22 12:14:08',
+    '2025-07-22 12:14:08',
     'MALE'
 );
+
 
 -- User 1 → SYS_ADMIN
 INSERT INTO user_role (user_id, role_id)
