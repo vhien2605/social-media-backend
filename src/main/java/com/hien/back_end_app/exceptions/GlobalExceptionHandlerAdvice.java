@@ -2,6 +2,7 @@ package com.hien.back_end_app.exceptions;
 
 import com.hien.back_end_app.dto.response.ApiErrorResponse;
 import com.hien.back_end_app.dto.response.ApiResponse;
+import com.hien.back_end_app.utils.enums.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -42,6 +43,19 @@ public class GlobalExceptionHandlerAdvice {
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @ExceptionHandler({AccessDeniedException.class})
+    public ApiResponse handleAccessDeniedHandler(AccessDeniedException e, WebRequest request) {
+        log.info("---------------------------Access denied exception handler start---------------------------");
+        String error = e.getMessage();
+        return ApiErrorResponse.builder()
+                .status(ErrorCode.ACCESS_DENIED.getCode())
+                .message(ErrorCode.ACCESS_DENIED.getMessage())
+                .error(ErrorCode.ACCESS_DENIED.name())
+                .path(request.getDescription(false))
+                .build();
+    }
+
+    @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler({IOException.class})
     public ApiResponse handleIOCloudinaryEx(IOException e, WebRequest request) {
         log.info("---------------------------IO exception handler start---------------------------");
@@ -58,9 +72,6 @@ public class GlobalExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.OK)
     @ExceptionHandler({Exception.class})
     public ApiResponse handleServerError(Exception e, WebRequest request) {
-        if (e instanceof AccessDeniedException) {
-            throw (AccessDeniedException) e;
-        }
         log.info("---------------------------Server error 500 exception handler start---------------------------");
         String error = e.getMessage();
         return ApiErrorResponse.builder()
